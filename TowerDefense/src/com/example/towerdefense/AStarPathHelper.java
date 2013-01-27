@@ -11,6 +11,8 @@ import org.andengine.util.algorithm.path.ICostFunction;
 import org.andengine.util.algorithm.path.IPathFinderMap;
 import org.andengine.util.algorithm.path.astar.ManhattanHeuristic;
 
+import android.util.Log;
+
 /**
  * This moves the towers to the selected tile
  * @author Dan
@@ -33,10 +35,9 @@ public class AStarPathHelper {
 	private ICostFunction<TMXLayer> mCostCallback;
 	protected int mWayPointIndex;
 	private boolean mHasFinishedPath;
-	private boolean needToUpdate; //Need so we don't have to update path EVERY block
 	
-	//Enemies
-	private Enemy enemy;
+	private float numOfEnemies;
+	private float currentlyFinished;
 	
 	//=================Constructor===================
 	public AStarPathHelper(TMXTiledMap pTiledMap, TMXTile endTile) {
@@ -45,9 +46,9 @@ public class AStarPathHelper {
 		mFinalPosition = endTile;
 		
 		mHasFinishedPath = true;
-		needToUpdate = false;
 		
 		mWayPointIndex = 0;
+		currentlyFinished = 0;
 		
 		//Create the needed objects for the AStarPathFinder
 		mAStarPathFinder = new MyAStarPathFinder<TMXLayer>();
@@ -90,8 +91,6 @@ public class AStarPathHelper {
 	 * This method moves the sprite to the designated location
 	 */
 	public Path getPath(Enemy enemy) {
-		
-		this.enemy = enemy;
 
 		//Enemy Coordinates
 		final float[] enemyCoordinates = new float[]{enemy.getX(), enemy.getY()};
@@ -107,7 +106,7 @@ public class AStarPathHelper {
 		int toCol = mFinalPosition.getTileColumn();
 		int toRow = mFinalPosition.getTileRow();
 		
-		aStarPath = findPathViaPathFinder(fromCol, fromRow, toCol, toRow, false);
+		aStarPath = findPathViaPathFinder(fromCol, fromRow, toCol, toRow);
 
 		//Update parameters
 		mWayPointIndex = 0;	
@@ -115,6 +114,18 @@ public class AStarPathHelper {
 		//Only loads the path if the AStarPath is not null
 		return loadPathFound();
 	}	
+	
+	public boolean isNavigating() {
+		return !mHasFinishedPath;
+	}
+	
+	public void startWave() {
+		mHasFinishedPath = false;
+	}
+	
+	public void setNumEnemies(float enemyCount) {
+		this.numOfEnemies = enemyCount;
+	}
 	
 	//******************************************Load Path********************************
 	
@@ -128,7 +139,9 @@ public class AStarPathHelper {
 	}
 	
 	//======================================Private Methods==============================
-		public boolean moveEntity(final Path pPath) {
+		public boolean moveEntity(final Enemy enemy) {
+			final Path pPath = enemy.getPath(); 
+			
 			mHasFinishedPath = false;
 			//Creates a shorter path to follow
 			//create a new path with length 2 from current sprite position to next
@@ -166,10 +179,11 @@ public class AStarPathHelper {
 							pPath.getCoordinatesY()[pPath.getSize()-1] != enemy.getY()) {
 						mHasFinishedPath = false;
 
-						if (needToUpdate) {
-							needToUpdate = false;
-							Path p = getPath();
-							if(p != null) moveEntity(p);
+						if (enemy.isNeedToUpdatePath()) {
+							enemy.setNeedToUpdatePath(false);
+							Path p = getPath(enemy);
+							enemy.setPath(p);
+							if(p != null) moveEntity(enemy);
 							else {
 								mHasFinishedPath = true;
 								mWayPointIndex = 0;
@@ -178,23 +192,31 @@ public class AStarPathHelper {
 						else {
 							float[] x = new float[(int)pPath.getCoordinatesX().length-1];
 							float[] y = new float[(int)pPath.getCoordinatesY().length-1];
-							Path p =null;
+							Path p = null;
 							try {
 								for (int i= 1; i < pPath.getCoordinatesX().length; i++) {
 									x[i-1] = pPath.getCoordinatesX()[i];
 									y[i-1] = pPath.getCoordinatesY()[i];
 								}
 								p  = new Path(x,y);
-							}catch(Exception e){p = getPath();}
+							}catch(Exception e){p = getPath(enemy);}
 							enemy.setPath(p);
-							moveEntity(p);
+							moveEntity(enemy);
 						}
 					}else {
-						mHasFinishedPath = true;
+						Log.i("", "FINISH");
 						mWayPointIndex = 0;
-						aStarPath = null;
+						//aStarPath = null;
+						enemy.destroy();
+						currentlyFinished++;
 						
-						enemy.setPosition(GameScene.getSharedInstance().X, GameScene.getSharedInstance().Y);						
+						if (currentlyFinished == numOfEnemies) {
+							mHasFinishedPath = true;
+							currentlyFinished = 0;
+							
+							GameScene scene = GameScene.getSharedInstance();
+							scene.initializeNextWave();
+						}
 					}
 					
 				}
@@ -204,17 +226,9 @@ public class AStarPathHelper {
 
 			return mHasFinishedPath;
 		}		
-		
-		public void needToUpdatePath() {
-			needToUpdate = true;
-		}
-		private org.andengine.util.algorithm.path.Path findPathViaPathFinder(int fromCol, int fromRow, int toCol, int toRow, boolean isATest) {
+	
+		private org.andengine.util.algorithm.path.Path findPathViaPathFinder(int fromCol, int fromRow, int toCol, int toRow) {
 			return mAStarPathFinder.findPath(MAX_SEARCH_DEPTH, mPathFinderMap, 0, 0, mTiledMap.getTileColumns(),
-					mTiledMap.getTileRows()-1, layer, fromCol, fromRow, toCol, toRow, false, mHeuristic, mCostCallback, isATest);
-		}
-
-		//Getters and Setters
-		public boolean isNavigating() {
-			return !mHasFinishedPath;
+					mTiledMap.getTileRows()-1, layer, fromCol, fromRow, toCol, toRow, false, mHeuristic, mCostCallback);
 		}
 }

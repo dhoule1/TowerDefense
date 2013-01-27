@@ -35,30 +35,43 @@ import org.andengine.util.math.MathUtils;
 import android.util.Log;
 
 public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener{
+	
+	//static fields referring to specific tiles on the map
 	private static final int TILE_WIDTH = 40;
 	private static final int TILE_HEIGHT = 40;
 	private static final int[] END_TILE_ID = new int[]{5,18};
 	
+	//Reference of Activity context
 	private TowerDefenseActivity activity;
+	
+	//Makes this a singleton class (only one instance at a time)
 	private static GameScene scene;
 	
+	//Variables to set up the zoom camera
 	private ZoomCamera mCamera;
 	private SurfaceScrollDetector mScrollDetector;
 	private PinchZoomDetector mPinchZoomDetector;
 	private float mPinchZoomStartedCameraZoomFactor;
 	private float maxZoom;
 	
+	//The map and layer of the field
 	private TMXTiledMap mTMXTiledMap;
 	private TMXLayer tmxLayer;
 	
-	private FlameEnemy enemy;	
+	//Turret option on the HUD
 	private TowerTile turretTile;
+	
+	//Start button on the HUD
 	private Sprite startButton;
 	
+	//The tower in 'limbo' when it is dragged from the HUD to the scene itself
 	private Tower dragTower;
+	//Highlights the tile underneath the dragTower
 	private Rectangle highlightTile;
+	//To make sure you only drag one tower at a time
 	private boolean towerMove;
 	
+	//List of towers on the field
 	private List<Tower> towers;
 	
 	//A-Star path variables
@@ -67,14 +80,13 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	private List<TMXTile> blockedTileList;
 	private AStarPathHelper aStarHelper;
 	
-	float X;
-	float Y;
-	
+	//Collision detection handler - runs every frame
 	private IUpdateHandler collisionDetect;
 	
+	//Wave fields
 	private WaveHelper waveGenerator;
-	private Enemy[] currentWave;
-	private float waveCount;
+	private Wave currentWave;
+	private Integer waveCount;
 	
 	
 	//***********************************************************
@@ -145,20 +157,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			}
 		}
 		
-		//enemy = new FlameEnemy((startTile.getTileColumn()*this.mTMXTiledMap.getTileWidth())+TILE_WIDTH/4, 
-			//	(startTile.getTileRow())*this.mTMXTiledMap.getTileHeight(), activity.getFlameEnemyTextureRegion());
-		enemy = new FlameEnemy((startTile.getTileColumn()*this.mTMXTiledMap.getTileWidth())+TILE_WIDTH/4, 
-					(startTile.getTileRow())*this.mTMXTiledMap.getTileHeight());
-		
-		X = enemy.getX(); 
-		Y = enemy.getY();
-		enemy.setScale(2.0f);
-		this.attachChild(enemy);
-		
-		waveGenerator = new WaveHelper();
-		
 		TowerTile.setPanelBounds(mCamera, mTMXTiledMap);
 		
+		//Initializes the HUD
 		HUD lowerPanel = TowerTile.getLowerPanel();
 		this.attachChild(lowerPanel);
 		
@@ -184,12 +185,14 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		lowerPanel.attachChild(startButton);
 		lowerPanel.registerTouchArea(startButton);
 		
-		//Initializing tower arrays
+		//Initializing tower array
 		towers = new ArrayList<Tower>();
 		
 		blockedTileList = new ArrayList<TMXTile>();
 		
-		aStarHelper = new AStarPathHelper(mTMXTiledMap, enemy, endTile);
+		aStarHelper = new AStarPathHelper(mTMXTiledMap, endTile);
+		waveGenerator = new WaveHelper();
+		waveCount = 0;
 		
 		collisionDetect = new RunnableHandler() {
 			@Override
@@ -199,6 +202,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		};
 		
 		this.registerUpdateHandler(collisionDetect);
+		
+		//Sets up paths/move modifiers of enemies in the first wave
+		initializeNextWave();
 		
 	}
 	//**********************************************************
@@ -226,34 +232,46 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	public TMXTile getStartTile() {
 		return this.startTile;
 	}
-	//public FlameEnemy getFlameEnemy() {
-	//	return enemy;
-	//}
 	public List<TMXTile> getBlockedList() {
 		return blockedTileList;
 	}
-	public Enemy[] getCurrentWave() {
+	public Wave getCurrentWave() {
 		return currentWave;
 	}
 	public AStarPathHelper getAStarHelper() {
 		return aStarHelper;
 	}
+	public WaveHelper getWaveHelper() {
+		return this.waveGenerator;
+	}
+	public Integer getWaveCount() {
+		return this.waveCount;
+	}	
+	
+	/**
+	 * Initializes paths and move modifiers of all enemies in the next wave
+	 */
+	public void initializeNextWave() {		
+		waveGenerator.initWave(waveCount);
+		currentWave = waveGenerator.get(waveCount);
+		currentWave.setInitialPath(currentWave.getEnemies()[0].getPath());
+		
+		//waveCount++;
+	}
 	
 	//PRIVATE METHODS
-	
+	/**
+	 * Attaches the move modifiers to each of the enemies in the next wave 
+	 * and attaches the enemies to the scene
+	 */
 	private void startCurrentWave() {
 		if (!aStarHelper.isNavigating()) {
-			
-			currentWave = waveGenerator.get(waveCount);
-		
-			enemy.setPath(aStarHelper.getPath());
-			aStarHelper.moveEntity(enemy.getPath());
-			
-			waveCount++;
+			waveGenerator.startWave();		
+			//waveCount++;
 		}
 	}
 	
-	private boolean blocksExit(TMXTile tile) {
+/*	private boolean blocksExit(TMXTile tile) {
 		Path p = enemy.getPath();
 		
 		TMXTile tileBefore = null;
@@ -314,47 +332,78 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		
 		if (!tile.equals(startTile)) return result;
 		else return result-1;
-	}	
+	}	*/
 	
+	/**
+	 * Checks to see if a x,y coordinate is on the TMXTiledMap
+	 * @param x
+	 * @param y
+	 * @return isOnMap
+	 */
 	private boolean pointOnMap(float x, float y) {
 		return (x < this.mTMXTiledMap.getTileColumns()*TILE_WIDTH
 				&& y < this.mTMXTiledMap.getTileRows()*TILE_HEIGHT);
 	}
 	
-	private void removeTower(Tower t) {
-		t.detachSelf();
-		t.getReticle().detachSelf();
+	/**
+	 * Removes a tower from the field
+	 * @param Tower t
+	 */
+	private void removeTower(final Tower t) {
+		activity.runOnUpdateThread(new Runnable() {
+
+			@Override
+			public void run() {
+				t.detachSelf();
+				t.getReticle().detachSelf();
+				t.clearEntityModifiers();
+				t.clearUpdateHandlers();
+			}	
+		});
 		
 		if (towers.contains(t)) {
 			towers.remove(t);
 		}
-		
-		t = null;
 	}	
 	
-/*	private void COLLISION_TIMER() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (aStarHelper.isNavigating()) {
-					try {
-						//Thread.sleep(200);
-						collisionDetect();
-					}catch(Exception e){}
-					
-				}
-			}
-		}).start();
-	}*/
-	
+	/**
+	 * Detects which enemies are in the range of which towers
+	 * Updates every frame
+	 */
 	private void collisionDetect() {
 		if (aStarHelper.isNavigating()) {
 			for (Tower t:towers) {
-				if(t.getSight().contains(enemy.getX(), enemy.getY())) {
-					float dx = t.getX()-enemy.getX();
-					float dy = t.getY()-enemy.getY();
-					float angle = MathUtils.atan2(dy,dx);
-					t.setRotation((float)(angle * (180.0f/Math.PI)));
+				for (Enemy enemy:currentWave.getEnemies()) {
+					if(t.getSight().contains(enemy.getX(), enemy.getY())) {
+						float dx = t.getX()-enemy.getX();
+						float dy = t.getY()-enemy.getY();
+						float angle = MathUtils.atan2(dy,dx);
+						t.setRotation((float)(angle * (180.0f/Math.PI)));
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * When placing a tower on the field, this checks 
+	 * if the path needs to be updated for each enemy
+	 * @param current
+	 * @param inMiddleOfWave
+	 */
+	private void updateAffectedEnemies(TMXTile current, boolean inMiddleOfWave) {
+		for (Enemy enemy:currentWave.getEnemies()) {
+			Path p = enemy.getPath();
+			for(int i = 0; i < p.getCoordinatesX().length; i++) {
+				float pX = p.getCoordinatesX()[i];
+				float pY = p.getCoordinatesY()[i];
+				
+				TMXTile tile = this.tmxLayer.getTMXTileAt(pX, pY);
+				
+				if (current.equals(tile)) {					
+					if (inMiddleOfWave) enemy.setNeedToUpdatePath(true);
+					else enemy.setPath(aStarHelper.getPath(enemy));
+					break;
 				}
 			}
 		}
@@ -439,8 +488,11 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		if (pSceneTouchEvent.isActionMove()) {
 			if (turretTile.getOnTouched() && !towerMove) {
 				turretTile.returnOnTouched();
-				if (enemy.getPath() == null)
-					enemy.setPath(aStarHelper.getPath());
+				/**
+				 * TODO See if we actually need a check here
+				 */
+				//if (currentWave.getPath() == null)
+					//currentWave;
 				
 				towerMove = true;
 				dragTower = new TurretTower(x,y, activity.getTurretTowerRegion());		
@@ -471,8 +523,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 					
 					if (currentTile.equals(endTile) 
 							|| currentTile.equals(startTile) 
-							|| blockedTileList.contains(currentTile) 
-							|| blocksExit(currentTile)) {
+							|| blockedTileList.contains(currentTile)) {
 						highlightTile.setColor(Color.RED);
 					}
 					else {
@@ -515,12 +566,12 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  			//If we are in the middle of a wave, the AStarPath class must update
 	  			//the path since there is now a new tower on the field
 	  			if (aStarHelper.isNavigating()) {
-	  				aStarHelper.needToUpdatePath();
+	  				updateAffectedEnemies(currentTile, true);
 	  			}else {
-	  				enemy.setPath(aStarHelper.getPath());
+	  				updateAffectedEnemies(currentTile, false);
 	  			}
 	  			
-	  			if (enemy.getPath() == null) {
+	  			if (currentWave.getPath() == null) {
 		  			blockedTileList.remove(currentTile);
 		  			removeTower(dragTower);
 	  			}

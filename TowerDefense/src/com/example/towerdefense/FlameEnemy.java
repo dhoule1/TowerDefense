@@ -13,10 +13,12 @@ public class FlameEnemy extends Enemy{
 	public FlameEnemy() {
 		
 		super(pTextureRegion, 0.0f, 0.0f, HEALTH, TRAVEL_SPEED);
+		this.setScale(2.0f);
 	}
 	
 	public FlameEnemy(float x, float y) {
 		super(pTextureRegion, x, y, HEALTH, TRAVEL_SPEED);
+		this.setScale(2.0f);
 	}
 	
 	@Override

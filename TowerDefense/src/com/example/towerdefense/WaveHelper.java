@@ -1,74 +1,110 @@
 package com.example.towerdefense;
 
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.PathModifier;
+import org.andengine.entity.modifier.IEntityModifier;
+import org.andengine.entity.modifier.MoveXModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.extension.tmx.TMXTile;
+import org.andengine.util.modifier.IModifier;
 
-public class WaveHelper extends IdentityHashMap<Integer, Enemy[]>{
+import android.util.Log;
+
+public class WaveHelper extends HashMap<Integer, Wave>{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	private GameScene scene;
+	private Wave wave;
 	private TMXTile startTile;
-	
-	private AStarPathHelper aStarHelper;
+	private AStarPathHelper aStarHelper;	
+	private TimerHandler timer;
 	
 	public WaveHelper() {
 		super();
-		GameScene scene = GameScene.getSharedInstance();
+		scene = GameScene.getSharedInstance();
 		startTile = scene.getStartTile();
-		aStarHelper = scene.getAStarHelper();
+		aStarHelper = scene.getAStarHelper(); 
 		
-		this.put(0, new Enemy[]{new FlameEnemy(), new FlameEnemy()});
+		this.put(0, new Wave(new Enemy[]{new FlameEnemy(), new FlameEnemy(),new FlameEnemy(), new FlameEnemy(),new FlameEnemy(), new FlameEnemy()}));
 	}
 	
-	public void initWave(float count) {
-		Enemy[] wave = this.get(count);
+	public void initWave(Integer count) {
+		wave = this.get(count);
+		Path path = null;
 		
-		Path beginningPath = new Path(2);
-		
-		for (int i = 0; i < wave.length; i++) {
-			final Enemy enemy = wave[i];
-			enemy.setPosition(i*-10, startTile.getTileRow()*GameScene.getTileHeight());
+		for (int i = 0; i < wave.getEnemies().length; i++) {
+			Path beginningPath = new Path(2);
+			final Enemy enemy = wave.getEnemies()[i];
+			enemy.setPosition(-GameScene.getTileWidth()+(GameScene.getTileWidth()/4), startTile.getTileRow()*GameScene.getTileHeight());
 			
-			beginningPath.to(enemy.getX(), enemy.getY()).to(startTile.getTileColumn()*GameScene.getTileWidth()+(GameScene.getTileWidth()/4), enemy.getY());
-			PathModifier moveModifier = new PathModifier(enemy.getSpeed(), beginningPath, new PathModifier.IPathModifierListener() {
+			beginningPath.to(enemy.getX(), enemy.getY())
+				.to((startTile.getTileColumn()*GameScene.getTileWidth()+(GameScene.getTileWidth()/4)), enemy.getY());
+			//PathModifier moveModifier = new PathModifier(enemy.getSpeed(), beginningPath, new PathModifier.IPathModifierListener() {
+			
+			MoveXModifier moveModifier;
+			moveModifier = new MoveXModifier(enemy.getSpeed(), 
+					enemy.getX(), (float)(startTile.getTileColumn()*GameScene.getTileWidth()+GameScene.getTileWidth()/4), 
+					new IEntityModifier.IEntityModifierListener() {
+
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier,
+								IEntity pItem) {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void onModifierFinished(final IModifier<IEntity> pModifier,
+								IEntity pItem) {
+							aStarHelper.moveEntity(enemy);							
+						}
 				
-				@Override
-				public void onPathWaypointStarted(PathModifier pPathModifier,
-						IEntity pEntity, int pWaypointIndex) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onPathWaypointFinished(PathModifier pPathModifier,
-						IEntity pEntity, int pWaypointIndex) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onPathStarted(PathModifier pPathModifier, IEntity pEntity) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void onPathFinished(PathModifier pPathModifier, IEntity pEntity) {
-					enemy.setPath(aStarHelper.getPath());
-					
-				}
 			});
-			enemy.registerEntityModifier(moveModifier);
+			moveModifier.setAutoUnregisterWhenFinished(true);
+			enemy.setBeginningModifier(moveModifier);
+			
+			if (path == null) path = aStarHelper.getPath(enemy);
+			enemy.setPath(path);
+		}
+		aStarHelper.setNumEnemies(wave.getEnemies().length);
+			
+	}
+	
+	public void startWave() {
+		aStarHelper.startWave();
+		
+		scene.registerUpdateHandler(timer = new TimerHandler(0.5f, true, new ITimerCallback() {
+
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				initializeEnemy();
+			}
+			
+		}));
+	}
+	
+	private void initializeEnemy() {
+		int count = 0;
+		for (Enemy enemy:wave.getEnemies()) {
+			if (enemy.getUserData() == null) {
+				enemy.setUserData("Started");
+				scene.attachChild(enemy);
+				enemy.registerEntityModifier(enemy.getBeginningModifier());
+				count++;
+				break;
+			}
 		}
 		
-		
+		if (count == 0) {
+			scene.unregisterUpdateHandler(timer);
+		}
 	}
 
 }
