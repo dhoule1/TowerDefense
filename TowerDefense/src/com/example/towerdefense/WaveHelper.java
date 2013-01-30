@@ -9,6 +9,7 @@ import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.MoveXModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.extension.tmx.TMXTile;
+import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.modifier.IModifier;
 
 import android.util.Log;
@@ -26,16 +27,52 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	private AStarPathHelper aStarHelper;	
 	private TimerHandler timer;
 	
+	
+	
+	
+	//*************CONSTRUCTOR*******************************//
+	
+	/**
+	 * The constructor of this class initializes all the waves of enemies for the entire game!
+	 */
 	public WaveHelper() {
 		super();
 		scene = GameScene.getSharedInstance();
 		startTile = scene.getStartTile();
 		aStarHelper = scene.getAStarHelper(); 
 		
-		this.put(0, new Wave(new Enemy[]{new FlameEnemy(), new FlameEnemy(),new FlameEnemy(), new FlameEnemy(),new FlameEnemy(), new FlameEnemy()}));
+		this.put(0, new Wave(createEnemyArray(FlameEnemy.class, 3)));
+		this.put(1, new Wave(createEnemyArray(FlameEnemy.class, 5)));
+		this.put(2, new Wave(createEnemyArray(FlameEnemy.class, 7)));
+		this.put(3, new Wave(createEnemyArray(FlameEnemy.class, 9)));
 	}
 	
+	private Enemy[] createEnemyArray(Class<? extends Enemy> E, int num) {
+		
+		TextureRegion texture;
+		
+		Enemy[] array = null;
+		if (E == FlameEnemy.class) {
+			texture = TowerDefenseActivity.getSharedInstance().getFlameEnemyTextureRegion();	
+			array = new FlameEnemy[num];
+			for (int i = 0; i < num; i++) {
+				array[i] = new FlameEnemy(texture);
+			}
+		}
+		return array;
+	}
+	
+	
+	
+	
+	//***************************PUBLIC METHODS*********************************//
+	
+	/**
+	 * Prepares the next wave of enemies beforehand so that they are ready on-hand
+	 * @param count
+	 */
 	public void initWave(Integer count) {
+		Log.i("Wave", count+"");
 		wave = this.get(count);
 		Path path = null;
 		
@@ -70,13 +107,21 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			moveModifier.setAutoUnregisterWhenFinished(true);
 			enemy.setBeginningModifier(moveModifier);
 			
-			if (path == null) path = aStarHelper.getPath(enemy);
-			enemy.setPath(path);
+			if (path == null) {
+				path = aStarHelper.getPath(null);
+				wave.setFullPath(path);
+			}
+			enemy.setCorrespondingWave(wave);
+			enemy.setPath(wave.getFullPath().deepCopy());
+			enemy.setIndex(i);
 		}
-		aStarHelper.setNumEnemies(wave.getEnemies().length);
 			
 	}
 	
+	/**
+	 * This method just attaches each enemy to its move modifier and attaches it
+	 * to the scene
+	 */
 	public void startWave() {
 		aStarHelper.startWave();
 		
@@ -90,6 +135,12 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		}));
 	}
 	
+	
+	//*****************PRIVATE METHODS***************************************//
+	/**
+	 * I needed this in a separate function since this method
+	 * gets called with the update handler
+	 */
 	private void initializeEnemy() {
 		int count = 0;
 		for (Enemy enemy:wave.getEnemies()) {

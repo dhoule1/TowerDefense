@@ -11,8 +11,10 @@ import org.andengine.extension.tmx.TMXTiledMap;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
-import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+
+import android.view.KeyEvent;
 
 public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	private static final int CAMERA_WIDTH = 800;
@@ -27,9 +29,9 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	private TMXTiledMap mTMXTiledMap;
 	private TMXLayer tmxLayer;
 	
-	private ITextureRegion flameEnemyRegion;
-	private ITextureRegion turretTowerRegion;
-	private ITextureRegion startButtonRegion;
+	private TextureRegion flameEnemyRegion;
+	private TextureRegion turretTowerRegion;
+	private TextureRegion startButtonRegion;
 
 	//OVERRIDDEN METHODS
 	@Override
@@ -45,7 +47,7 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	@Override
 	protected void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		final BitmapTextureAtlas mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 289, 289, TextureOptions.DEFAULT);
+		final BitmapTextureAtlas mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 324, 324, TextureOptions.DEFAULT);
 		int w = 0;
 		int h = 0;
 		flameEnemyRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "flame.png",w,h); //14x27
@@ -60,6 +62,14 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 		
 		this.currentScene = new GameScene();
 		return currentScene;
+	}
+	
+	@Override
+	public boolean onKeyDown(final int pKeyCode, final KeyEvent pEvent) {
+		if (pKeyCode == KeyEvent.KEYCODE_BACK && pEvent.getAction() == KeyEvent.ACTION_DOWN) {
+			return super.onKeyDown(pKeyCode, pEvent);
+		}
+		return false;
 	}
 	
 	//GETTERS AND SETTERS
@@ -78,13 +88,13 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	public TMXLayer getTMXLayer() {
 		return this.tmxLayer;
 	}
-	public ITextureRegion getFlameEnemyTextureRegion() {
+	public TextureRegion getFlameEnemyTextureRegion() {
 		return this.flameEnemyRegion;
 	}
-	public ITextureRegion getTurretTowerRegion() {
+	public TextureRegion getTurretTowerRegion() {
 		return this.turretTowerRegion;
 	}
-	public ITextureRegion getStartButtonRegion() {
+	public TextureRegion getStartButtonRegion() {
 		return this.startButtonRegion;
 	}
 }

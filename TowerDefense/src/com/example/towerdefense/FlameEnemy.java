@@ -10,9 +10,9 @@ public class FlameEnemy extends Enemy{
 	private final static float TRAVEL_SPEED = 0.5f; 
 	private Path mPath;
 
-	public FlameEnemy() {
+	public FlameEnemy(ITextureRegion region) {
 		
-		super(pTextureRegion, 0.0f, 0.0f, HEALTH, TRAVEL_SPEED);
+		super(region, 0.0f, 0.0f, HEALTH, TRAVEL_SPEED);
 		this.setScale(2.0f);
 	}
 	

@@ -12,6 +12,10 @@ public class Enemy extends Sprite{
 	private Path path;
 	private MoveXModifier beginningModifier;
 	private boolean needToUpdatePath;
+	private boolean needToAdjustPath;
+	private Wave wave;
+	private int index;
+	private int positionOnPath;
 
 	public Enemy(ITextureRegion pTextureRegion, float x, float y, float health, float speed) {
 		super(x, y, pTextureRegion, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
@@ -19,6 +23,8 @@ public class Enemy extends Sprite{
 		this.speed = speed;
 		this.path = null;
 		this.needToUpdatePath = false;
+		this.needToAdjustPath = false;
+		this.positionOnPath = 0;
 	}
 	
 	public void destroy() {
@@ -30,6 +36,7 @@ public class Enemy extends Sprite{
 				setUserData(null);
 			}
 		});
+		this.positionOnPath = 0;
 	}
 	
 	public float getHealth() {
@@ -64,12 +71,47 @@ public class Enemy extends Sprite{
 		return beginningModifier;
 	}
 	
+	public void setNeedToUpdatePath(boolean needToUpdatePath) {
+		this.needToUpdatePath = needToUpdatePath;
+	}
+	
 	public boolean isNeedToUpdatePath() {
 		return needToUpdatePath;
 	}
 
-	public void setNeedToUpdatePath(boolean needToUpdatePath) {
-		this.needToUpdatePath = needToUpdatePath;
+	public void setNeedToAdjustPath(boolean needToAdjustPath) {
+		this.needToAdjustPath = needToAdjustPath;
+	}
+	
+	public boolean isNeedToAdjustPath() {
+		return needToAdjustPath;
+	}
+	
+	public void setCorrespondingWave(Wave wave) {
+		this.wave = wave;
+	}
+	
+	public Wave getCorrespondingWave() {
+		return wave;
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
+	}
+
+	public int getPositionOnPath() {
+		return positionOnPath;
+	}
+
+	public void setPositionOnPath(int positionOnPath) {
+		this.positionOnPath = positionOnPath;
+	}
+	public void incrementPosOnPath() {
+		this.positionOnPath++;
 	}
 
 

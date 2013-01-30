@@ -77,6 +77,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	//A-Star path variables
 	private TMXTile startTile;
 	private TMXTile endTile;
+	private TMXTile currentTile;
 	private List<TMXTile> blockedTileList;
 	private AStarPathHelper aStarHelper;
 	
@@ -190,10 +191,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		
 		blockedTileList = new ArrayList<TMXTile>();
 		
-		aStarHelper = new AStarPathHelper(mTMXTiledMap, endTile);
-		waveGenerator = new WaveHelper();
-		waveCount = 0;
-		
 		collisionDetect = new RunnableHandler() {
 			@Override
 			public void onUpdate(float pS) {
@@ -202,6 +199,10 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		};
 		
 		this.registerUpdateHandler(collisionDetect);
+		
+		aStarHelper = new AStarPathHelper(mTMXTiledMap, endTile);
+		waveGenerator = new WaveHelper();
+		waveCount = 0;
 		
 		//Sets up paths/move modifiers of enemies in the first wave
 		initializeNextWave();
@@ -252,11 +253,17 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * Initializes paths and move modifiers of all enemies in the next wave
 	 */
 	public void initializeNextWave() {		
-		waveGenerator.initWave(waveCount);
-		currentWave = waveGenerator.get(waveCount);
-		currentWave.setInitialPath(currentWave.getEnemies()[0].getPath());
+		waveGenerator.initWave(waveCount%4);
+		currentWave = waveGenerator.get(waveCount%4);
 		
 		//waveCount++;
+	}
+	
+	public void removeCurrentTower() {
+		try {
+			blockedTileList.remove(currentTile);
+			removeTower(dragTower);
+		}catch(Exception e){}
 	}
 	
 	//PRIVATE METHODS
@@ -267,72 +274,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	private void startCurrentWave() {
 		if (!aStarHelper.isNavigating()) {
 			waveGenerator.startWave();		
-			//waveCount++;
+			waveCount++;
 		}
 	}
-	
-/*	private boolean blocksExit(TMXTile tile) {
-		Path p = enemy.getPath();
-		
-		TMXTile tileBefore = null;
-		boolean onPath = false;
-		for(int i = 0; i < p.getCoordinatesX().length; i++) {
-			float x = p.getCoordinatesX()[i];
-			float y = p.getCoordinatesY()[i];
-			
-			if (x == tile.getTileColumn()*tile.getTileWidth()) {
-				if (y == tile.getTileRow()*tile.getTileHeight()) {
-					onPath = true;
-					try {
-						tileBefore = tmxLayer.getTMXTileAt(p.getCoordinatesX()[i-1], p.getCoordinatesY()[i-1]);
-					}catch(Exception e) {}
-				}
-			}
-		}
-		if (!onPath) return false;
-		
-		int blockedSides = blockedSideCount(tileBefore);
-		
-		if (blockedSides >= 2) return true;
-		
-		return false;
-	}
-	
-	private int blockedSideCount(TMXTile tile) {
-		
-		if (tile == null) {
-			int count = blockedSideCount(startTile);
-			return count-1;
-		}
-		
-		int result = 0;
-		
-		int c = tile.getTileColumn();
-		int r = tile.getTileRow();
-		
-		TMXTile[] surroundingTiles = new TMXTile[4];
-		
-		int disparity = 0;
-		try {
-			surroundingTiles[0] = tmxLayer.getTMXTile(c-1,r);
-		}catch(Exception e){disparity++;result++;}
-		try {
-			surroundingTiles[1-disparity] = tmxLayer.getTMXTile(c+1,r);
-		}catch(Exception e){disparity++;result++;}
-		try {
-			surroundingTiles[2-disparity] = tmxLayer.getTMXTile(c,r-1);
-		}catch(Exception e){disparity++;result++;}
-		try {
-			surroundingTiles[3-disparity] = tmxLayer.getTMXTile(c,r+1);
-		}catch(Exception e){disparity++;result++;}
-		
-		for(TMXTile t:surroundingTiles) {
-			if (blockedTileList.contains(t)) result++;
-		}
-		
-		if (!tile.equals(startTile)) return result;
-		else return result-1;
-	}	*/
 	
 	/**
 	 * Checks to see if a x,y coordinate is on the TMXTiledMap
@@ -364,6 +308,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		if (towers.contains(t)) {
 			towers.remove(t);
 		}
+		
 	}	
 	
 	/**
@@ -392,7 +337,17 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * @param inMiddleOfWave
 	 */
 	private void updateAffectedEnemies(TMXTile current, boolean inMiddleOfWave) {
-		for (Enemy enemy:currentWave.getEnemies()) {
+		
+		Enemy[] enemies = currentWave.getEnemies();		
+		if (aStarHelper.getPath(enemies[0]) == null) {
+			enemies[0].setNeedToUpdatePath(true);
+			this.removeCurrentTower();
+			return;
+		}
+		
+		
+		outer:
+		for (Enemy enemy:enemies) {
 			Path p = enemy.getPath();
 			for(int i = 0; i < p.getCoordinatesX().length; i++) {
 				float pX = p.getCoordinatesX()[i];
@@ -400,11 +355,32 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 				
 				TMXTile tile = this.tmxLayer.getTMXTileAt(pX, pY);
 				
-				if (current.equals(tile)) {					
-					if (inMiddleOfWave) enemy.setNeedToUpdatePath(true);
-					else enemy.setPath(aStarHelper.getPath(enemy));
-					break;
+				if (current.equals(tile)) {
+					Log.i("Here 2", "fsdf");
+					updateEnemyPaths(inMiddleOfWave, enemy);
+					if(inMiddleOfWave) break;
+					break outer;
 				}
+			}
+		}
+	}
+	
+	/**
+	 * This method actually notifies which enemies need to update their paths
+	 * @param inMiddleOfWave
+	 * @param enemy
+	 */
+	private void updateEnemyPaths(boolean inMiddleOfWave, Enemy enemy) {		
+		if (inMiddleOfWave) {
+			enemy.setNeedToUpdatePath(true);
+		}else {
+			Path p = aStarHelper.getPath(currentWave.getEnemies()[0]);
+			if (p == null) {
+				removeCurrentTower();
+				p = aStarHelper.getPath(currentWave.getEnemies()[0]);
+			}
+			for (Enemy e:currentWave.getEnemies()) {
+				e.setPath(p.deepCopy());
 			}
 		}
 	}
@@ -447,7 +423,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	@Override
 	public void onScrollStarted(ScrollDetector pScollDetector, int pPointerID,
 			float pDistanceX, float pDistanceY) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -460,7 +435,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	@Override
 	public void onScrollFinished(ScrollDetector pScollDetector, int pPointerID,
 			float pDistanceX, float pDistanceY) {
-		// TODO Auto-generated method stub
 	}
 	
 
@@ -468,6 +442,8 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		Float x = pSceneTouchEvent.getX();
 		Float y = pSceneTouchEvent.getY();
+		
+		currentTile = this.tmxLayer.getTMXTileAt(x,y);
 		
 	// if the user pinches or dragtouches the screen then...
   	if(this.mPinchZoomDetector != null) {
@@ -503,7 +479,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			}			
 			else if (towerMove) {
 				if (pointOnMap(x, y)) {
-					TMXTile currentTile = this.tmxLayer.getTMXTileAt(x,y);
 					
 					dragTower.setPosition(currentTile.getTileX() - TILE_WIDTH/2,
 							currentTile.getTileY() - TILE_HEIGHT/2);
@@ -553,8 +528,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			if (towerMove) {
 	  		towerMove = false;
 	  		turretTile.returnOnTouched();
-	  		
-	  		TMXTile currentTile = this.tmxLayer.getTMXTileAt(x,y);
 
 	  		if (currentTile != null && highlightTile != null && highlightTile.getColor().equals(Color.BLUE)) {
 	  			//Add the tile to the blocked list
@@ -570,15 +543,10 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  			}else {
 	  				updateAffectedEnemies(currentTile, false);
 	  			}
-	  			
-	  			if (currentWave.getPath() == null) {
-		  			blockedTileList.remove(currentTile);
-		  			removeTower(dragTower);
-	  			}
-	  			
 	  		}
+	  		
 	  		else {
-	  			removeTower(dragTower);
+	  			removeCurrentTower();
 	  		}
 	  		
 	  		if (highlightTile != null) {
@@ -586,9 +554,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  			highlightTile = null;
 	  		}
 			} 		
-		} 
-		
+		} 	
   	return true;
   }
-
 }
