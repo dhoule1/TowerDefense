@@ -31,12 +31,24 @@ public class Enemy extends Sprite{
 		TowerDefenseActivity.getSharedInstance().runOnUpdateThread(new Runnable() {
 
 			@Override
-			public void run() {
-				detachSelf();	
-				setUserData(null);
+			public void run() {	
+				detachSelf();
+				clearEntityModifiers();
+				clearUpdateHandlers();
 			}
 		});
-		this.positionOnPath = 0;
+		this.setUserData("dead");
+		this.returnHealthToNormal();
+	}
+	
+	public void returnHealthToNormal() {}
+	
+	public void hit() {
+		health--;
+	}
+	
+	public boolean isDead() {
+		return health <= 0;
 	}
 	
 	public float getHealth() {
@@ -113,6 +125,4 @@ public class Enemy extends Sprite{
 	public void incrementPosOnPath() {
 		this.positionOnPath++;
 	}
-
-
 }

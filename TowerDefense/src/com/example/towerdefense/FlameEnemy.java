@@ -26,6 +26,11 @@ public class FlameEnemy extends Enemy{
 		return super.convertLocalToSceneCoordinates(pCoordinates);
 	}
 	
+	@Override
+	public void returnHealthToNormal() {
+		this.setHealth(HEALTH);
+	}
+	
 	public void setPath(Path pPath) {
 		mPath = pPath;
 	}

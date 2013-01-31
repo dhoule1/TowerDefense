@@ -26,6 +26,27 @@ public class Wave {
 		this.enemies = (Enemy[]) enemies.toArray();
 	}
 	
+	
+/*	public void cleanUp() {
+		int count = 0;
+		for (int i = 0; i < enemies.length; i++) {
+			Enemy e = enemies[i];
+			if (e != null) count++;
+		}
+
+		Enemy[] array = new Enemy[count];
+		
+		for (int i = 0; i < enemies.length; i++) {
+			Enemy e = enemies[i];
+			if (e != null) array[i] = e;
+		}
+		
+		this.enemies = array;
+	}*/
+	
+	
+	
+	
 	public Enemy[] getEnemies() {
 		return enemies;
 	}

@@ -22,6 +22,8 @@ import android.util.Log;
 public class AStarPathHelper {
 
 	private static final int MAX_SEARCH_DEPTH = 60;
+	
+	private GameScene scene;
 
 	// TMX variables
 	private TMXTiledMap mTiledMap;
@@ -36,10 +38,13 @@ public class AStarPathHelper {
 	private ICostFunction<TMXLayer> mCostCallback;
 	protected int mWayPointIndex;
 	private boolean mHasFinishedPath;
-	private float currentlyFinished;
+	private int currentlyFinished;
 
 	// =================Constructor===================
 	public AStarPathHelper(TMXTiledMap pTiledMap, TMXTile endTile) {
+		
+		scene = GameScene.getSharedInstance();
+		
 		mTiledMap = pTiledMap;
 		layer = mTiledMap.getTMXLayers().get(0);
 		mFinalPosition = endTile;
@@ -65,7 +70,7 @@ public class AStarPathHelper {
 				 */
 
 				try {
-					if (GameScene.getSharedInstance().getBlockedList()
+					if (scene.getBlockedList()
 							.contains(pTMXLayer.getTMXTile(pX, pY))) {
 						return true;
 					}
@@ -88,8 +93,6 @@ public class AStarPathHelper {
 
 	// ===================Public Methods==================================
 	
-	
-	
 	//Getters and Setters
 	public boolean isNavigating() {
 		return !mHasFinishedPath;
@@ -98,7 +101,20 @@ public class AStarPathHelper {
 	public void startWave() {
 		mHasFinishedPath = false;
 	}
-
+	public void finishWave() {
+		mHasFinishedPath = true;
+	}
+	
+	public int getNumberOfEnemiesFinished() {
+		return currentlyFinished;
+	}
+	public void resetNumberOfEnemiesFinished() {
+		currentlyFinished = 0;
+	}
+	
+	public void doneWithPath() {
+		mHasFinishedPath = true;
+	}
 	
 	/*
 	 * This method moves the sprite to the designated location
@@ -124,7 +140,7 @@ public class AStarPathHelper {
 			toCol = mFinalPosition.getTileColumn();
 			toRow = mFinalPosition.getTileRow();
 		} else {
-			TMXTile startTile = GameScene.getSharedInstance().getStartTile();
+			TMXTile startTile = scene.getStartTile();
 			fromCol = startTile.getTileColumn();
 			fromRow = startTile.getTileRow();
 			toCol = mFinalPosition.getTileColumn();
@@ -146,7 +162,17 @@ public class AStarPathHelper {
 	 * @return
 	 */
 	public boolean moveEntity(final Enemy enemy) {
-		final Path pPath = enemy.getPath();
+		
+		
+		if (enemy.getUserData() == "dead") return true;
+		
+		
+		Path path = enemy.getPath();
+		if (path == null) {
+			scene.removeCurrentTower();
+			path = getPath(enemy);
+		}
+		final Path pPath = path;
 
 		mHasFinishedPath = false;
 		// Creates a shorter path to follow
@@ -191,14 +217,8 @@ public class AStarPathHelper {
 							mWayPointIndex = 0;
 							enemy.destroy();
 							currentlyFinished++;
-
-							if (currentlyFinished == enemy.getCorrespondingWave().getEnemies().length) {
-								mHasFinishedPath = true;
-								currentlyFinished = 0;
-
-								GameScene scene = GameScene.getSharedInstance();
-								scene.initializeNextWave();
-							}
+							
+							scene.seeIffWaveFinished();
 						}
 						else {
 							mHasFinishedPath = false;

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.engine.camera.ZoomCamera;
-import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.handler.runnable.RunnableHandler;
 import org.andengine.entity.modifier.PathModifier.Path;
@@ -89,6 +88,10 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	private Wave currentWave;
 	private Integer waveCount;
 	
+	private Integer deadEnemies;
+	private boolean waveFinished;
+	private boolean initializedNewWave;
+	
 	
 	//***********************************************************
 	//CONSTRUCTOR
@@ -158,16 +161,12 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			}
 		}
 		
-		TowerTile.setPanelBounds(mCamera, mTMXTiledMap);
+	  //Initializes the HUD
+		BottomPanel panel = new BottomPanel(mCamera, mTMXTiledMap);		
+		this.attachChild(panel);
 		
-		//Initializes the HUD
-		HUD lowerPanel = TowerTile.getLowerPanel();
-		this.attachChild(lowerPanel);
-		
-		turretTile = new TowerTile(activity.getTurretTowerRegion(), 1);
-		lowerPanel.attachChild(turretTile.getFrame());
-		lowerPanel.registerTouchArea(turretTile.getFrame());
-		lowerPanel.attachChild(turretTile.getSprite());
+		turretTile = new TowerTile(activity.getTurretTowerRegion());
+		panel.placeTowerAccess(turretTile, 1);
 		
 		startButton = new Sprite(0.0f,
 				0.0f, activity.getStartButtonRegion(), activity.getVertexBufferObjectManager()) {
@@ -182,14 +181,26 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		 * TODO fix this shit
 		 */
 		startButton.setScale(0.473372781f);
-		startButton.setPosition(mCamera.getBoundsWidth() - startButton.getWidthScaled()*1.55f, TowerTile.getLowerPanel().getY() - startButton.getHeightScaled()/1.8f);
-		lowerPanel.attachChild(startButton);
-		lowerPanel.registerTouchArea(startButton);
+		panel.placeStartButton(startButton);
 		
 		//Initializing tower array
 		towers = new ArrayList<Tower>();
 		
 		blockedTileList = new ArrayList<TMXTile>();
+		
+		aStarHelper = new AStarPathHelper(mTMXTiledMap, endTile);
+		waveGenerator = new WaveHelper();
+		waveCount = 0;
+		deadEnemies = 0;
+		
+		waveFinished = true;
+		initializedNewWave = false;
+		
+		//Sets up paths/move modifiers of enemies in the first wave
+		initializeNextWave();
+		
+		Log.i("Info", "Dead Enemies: "+deadEnemies + " Finished Enemies: "+ aStarHelper.getNumberOfEnemiesFinished() +
+				" Current Wave Length: "+currentWave.getEnemies().length);
 		
 		collisionDetect = new RunnableHandler() {
 			@Override
@@ -199,13 +210,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		};
 		
 		this.registerUpdateHandler(collisionDetect);
-		
-		aStarHelper = new AStarPathHelper(mTMXTiledMap, endTile);
-		waveGenerator = new WaveHelper();
-		waveCount = 0;
-		
-		//Sets up paths/move modifiers of enemies in the first wave
-		initializeNextWave();
 		
 	}
 	//**********************************************************
@@ -248,15 +252,27 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	public Integer getWaveCount() {
 		return this.waveCount;
 	}	
+	public void incrementDeadCount() {
+		this.deadEnemies++;
+	}
 	
 	/**
 	 * Initializes paths and move modifiers of all enemies in the next wave
 	 */
 	public void initializeNextWave() {		
+		Log.i("Here Upping The Count", "Here");
+		Log.i("WaveFinished", waveFinished+"");
 		waveGenerator.initWave(waveCount%4);
 		currentWave = waveGenerator.get(waveCount%4);
+		waveCount++;
+
+		this.aStarHelper.resetNumberOfEnemiesFinished();
+		this.aStarHelper.finishWave();
+		this.deadEnemies = 0;
 		
-		//waveCount++;
+		for (Enemy enemy:currentWave.getEnemies()) {
+			enemy.setUserData(null);
+		}
 	}
 	
 	public void removeCurrentTower() {
@@ -272,9 +288,10 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * and attaches the enemies to the scene
 	 */
 	private void startCurrentWave() {
-		if (!aStarHelper.isNavigating()) {
+		if (waveFinished) {
+			waveFinished = false;
+			initializedNewWave = false;
 			waveGenerator.startWave();		
-			waveCount++;
 		}
 	}
 	
@@ -316,19 +333,55 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * Updates every frame
 	 */
 	private void collisionDetect() {
-		if (aStarHelper.isNavigating()) {
+		if (!waveFinished) {
 			for (Tower t:towers) {
 				for (Enemy enemy:currentWave.getEnemies()) {
-					if(t.getSight().contains(enemy.getX(), enemy.getY())) {
-						float dx = t.getX()-enemy.getX();
-						float dy = t.getY()-enemy.getY();
+					if (enemy.getUserData() == "dead") continue;
+					
+					boolean inRange = false;
+					if (stillInRange(t)) {
+						//enemy = t.getLockedOn();
+						//inRange = true;
+					}
+					
+					if(!inRange && t.getSight().contains(enemy.getX(), enemy.getY())) {
+						t.setLockedOn(enemy);
+						float dx = t.getX()-(enemy.getX()-enemy.getWidthScaled());
+						float dy = t.getY()-(enemy.getY()-enemy.getHeightScaled()/2);
 						float angle = MathUtils.atan2(dy,dx);
 						t.setRotation((float)(angle * (180.0f/Math.PI)));
+						t.shoot(enemy);
 					}
 				}
 			}
 		}
 	}
+	
+	private boolean stillInRange(Tower t) {
+		if (t.getLockedOn() == null || t.getLockedOn().getUserData() == "dead") return false;
+	  return t.getSight().contains(t.getLockedOn().getX(), t.getLockedOn().getY());
+	}
+	
+	protected void seeIffWaveFinished() {
+		if (((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().length) || waveFinished) == true) {
+			Log.i("Ending Wave", "Calculating why...");
+			if ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().length) == true) {
+				Log.i("Answer", "Correct Number of Dead Enemies");
+			}
+			if (waveFinished) {
+				Log.i("Answer", "The variable 'waveFinished' is set to true");
+			}
+		}
+		
+		if (!initializedNewWave) {
+			if  ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().length)) {
+				initializedNewWave = true;
+				waveFinished = true;
+				initializeNextWave();
+			}
+		}
+	}	
+		
 	
 	/**
 	 * When placing a tower on the field, this checks 
@@ -356,7 +409,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 				TMXTile tile = this.tmxLayer.getTMXTileAt(pX, pY);
 				
 				if (current.equals(tile)) {
-					Log.i("Here 2", "fsdf");
 					updateEnemyPaths(inMiddleOfWave, enemy);
 					if(inMiddleOfWave) break;
 					break outer;

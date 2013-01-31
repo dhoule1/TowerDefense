@@ -16,9 +16,6 @@ import android.util.Log;
 
 public class WaveHelper extends HashMap<Integer, Wave>{
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	private GameScene scene;
@@ -45,21 +42,6 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		this.put(1, new Wave(createEnemyArray(FlameEnemy.class, 5)));
 		this.put(2, new Wave(createEnemyArray(FlameEnemy.class, 7)));
 		this.put(3, new Wave(createEnemyArray(FlameEnemy.class, 9)));
-	}
-	
-	private Enemy[] createEnemyArray(Class<? extends Enemy> E, int num) {
-		
-		TextureRegion texture;
-		
-		Enemy[] array = null;
-		if (E == FlameEnemy.class) {
-			texture = TowerDefenseActivity.getSharedInstance().getFlameEnemyTextureRegion();	
-			array = new FlameEnemy[num];
-			for (int i = 0; i < num; i++) {
-				array[i] = new FlameEnemy(texture);
-			}
-		}
-		return array;
 	}
 	
 	
@@ -92,9 +74,7 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 
 						@Override
 						public void onModifierStarted(IModifier<IEntity> pModifier,
-								IEntity pItem) {
-							// TODO Auto-generated method stub
-							
+								IEntity pItem) {	
 						}
 
 						@Override
@@ -156,6 +136,27 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		if (count == 0) {
 			scene.unregisterUpdateHandler(timer);
 		}
+	}
+	
+	/**
+	 * Returns an array of enemies from Enemy class and number requested
+	 * @param E Enemy
+	 * @param int num
+	 * @return Enemy[]
+	 */
+	private Enemy[] createEnemyArray(Class<? extends Enemy> E, int num) {
+		
+		TextureRegion texture;
+		Enemy[] array = null;
+		
+		if (E == FlameEnemy.class) {
+			texture = TowerDefenseActivity.getSharedInstance().getFlameEnemyTextureRegion();	
+			array = new FlameEnemy[num];
+			for (int i = 0; i < num; i++) {
+				array[i] = new FlameEnemy(texture);
+			}
+		}
+		return array;
 	}
 
 }
