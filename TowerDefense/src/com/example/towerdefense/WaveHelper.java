@@ -87,11 +87,11 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			moveModifier.setAutoUnregisterWhenFinished(true);
 			enemy.setBeginningModifier(moveModifier);
 			
-			if (path == null) {
+			while (path == null) {
+				Log.i("Setting Path", "Now");
 				path = aStarHelper.getPath(null);
 				wave.setFullPath(path);
 			}
-			enemy.setCorrespondingWave(wave);
 			enemy.setPath(wave.getFullPath().deepCopy());
 			enemy.setIndex(i);
 		}

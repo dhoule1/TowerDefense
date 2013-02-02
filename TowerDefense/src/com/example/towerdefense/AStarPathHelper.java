@@ -3,13 +3,8 @@ package com.example.towerdefense;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
-import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.extension.tmx.TMXTiledMap;
-import org.andengine.util.Constants;
-import org.andengine.util.algorithm.path.ICostFunction;
-import org.andengine.util.algorithm.path.IPathFinderMap;
-import org.andengine.util.algorithm.path.astar.ManhattanHeuristic;
 
 import android.util.Log;
 
@@ -20,22 +15,15 @@ import android.util.Log;
  * 
  */
 public class AStarPathHelper {
-
-	private static final int MAX_SEARCH_DEPTH = 60;
 	
 	private GameScene scene;
 
 	// TMX variables
-	private TMXTiledMap mTiledMap;
-	private TMXLayer layer;
 	private TMXTile mFinalPosition;
 
 	// Paths
 	private org.andengine.util.algorithm.path.Path aStarPath;
-	private MyAStarPathFinder<TMXLayer> mAStarPathFinder;
-	private ManhattanHeuristic<TMXLayer> mHeuristic;
-	private IPathFinderMap<TMXLayer> mPathFinderMap;
-	private ICostFunction<TMXLayer> mCostCallback;
+	private MyAStarPathFinder mAStarPathFinder;
 	protected int mWayPointIndex;
 	private boolean mHasFinishedPath;
 	private int currentlyFinished;
@@ -45,8 +33,6 @@ public class AStarPathHelper {
 		
 		scene = GameScene.getSharedInstance();
 		
-		mTiledMap = pTiledMap;
-		layer = mTiledMap.getTMXLayers().get(0);
 		mFinalPosition = endTile;
 
 		mHasFinishedPath = true;
@@ -55,40 +41,9 @@ public class AStarPathHelper {
 		currentlyFinished = 0;
 
 		// Create the needed objects for the AStarPathFinder
-		mAStarPathFinder = new MyAStarPathFinder<TMXLayer>();
+		//mAStarPathFinder = new MyAStarPathFinder<TMXLayer>();
+		mAStarPathFinder = new MyAStarPathFinder();
 
-		// No special heuristical needed
-		mHeuristic = new ManhattanHeuristic<TMXLayer>();
-
-		// Define block behavior
-		mPathFinderMap = new IPathFinderMap<TMXLayer>() {
-
-			@Override
-			public boolean isBlocked(int pX, int pY, TMXLayer pTMXLayer) {
-				/*
-				 * This is where collisions are detected
-				 */
-
-				try {
-					if (scene.getBlockedList()
-							.contains(pTMXLayer.getTMXTile(pX, pY))) {
-						return true;
-					}
-				} catch (Exception e) {
-					return true;
-				}
-				return false;
-			}
-		};
-
-		// Define how cost is determined. Cost is not used in this astar path
-		mCostCallback = new ICostFunction<TMXLayer>() {
-			@Override
-			public float getCost(IPathFinderMap<TMXLayer> pPathFinderMap, int pFromX,
-					int pFromY, int pToX, int pToY, TMXLayer pEntity) {
-				return 0;
-			}
-		};
 	}
 
 	// ===================Public Methods==================================
@@ -120,40 +75,14 @@ public class AStarPathHelper {
 	 * This method moves the sprite to the designated location
 	 */
 	public Path getPath(Enemy enemy) {
-
-		int fromCol;
-		int fromRow;
-		int toCol;
-		int toRow;
-
-		if (enemy != null) {
-			final float[] enemyCoordinates = new float[] { enemy.getX(), enemy.getY() };
-
-			// Get the tile of the enemy
-			TMXTile enemyPosition = layer.getTMXTileAt(
-					enemyCoordinates[Constants.VERTEX_INDEX_X],
-					enemyCoordinates[Constants.VERTEX_INDEX_Y]);
-
-			// These are the parameters used to determine the AStarPath
-			fromCol = enemyPosition.getTileColumn();
-			fromRow = enemyPosition.getTileRow();
-			toCol = mFinalPosition.getTileColumn();
-			toRow = mFinalPosition.getTileRow();
-		} else {
-			TMXTile startTile = scene.getStartTile();
-			fromCol = startTile.getTileColumn();
-			fromRow = startTile.getTileRow();
-			toCol = mFinalPosition.getTileColumn();
-			toRow = mFinalPosition.getTileRow();
-		}
-
-		aStarPath = findPathViaPathFinder(fromCol, fromRow, toCol, toRow);
+		
+		aStarPath = this.mAStarPathFinder.findPath(enemy);
 
 		// Update parameters
 		mWayPointIndex = 0;
 
 		// Only loads the path if the AStarPath is not null
-		return loadPathFound();
+			return loadPathFound();
 	}
 
 	/**
@@ -161,13 +90,11 @@ public class AStarPathHelper {
 	 * @param enemy
 	 * @return
 	 */
-	public boolean moveEntity(final Enemy enemy) {
-		
-		
+	public boolean moveEntity(final Enemy enemy) {		
 		if (enemy.getUserData() == "dead") return true;
 		
+		Path path = enemy.getPath();			
 		
-		Path path = enemy.getPath();
 		if (path == null) {
 			scene.removeCurrentTower();
 			path = getPath(enemy);
@@ -218,6 +145,7 @@ public class AStarPathHelper {
 							enemy.destroy();
 							currentlyFinished++;
 							
+							scene.loseALife();
 							scene.seeIffWaveFinished();
 						}
 						else {
@@ -225,23 +153,7 @@ public class AStarPathHelper {
 
 							if (enemy.isNeedToUpdatePath()) {
 								enemy.setNeedToUpdatePath(false);
-								
-								Thread t = new Thread(new Runnable() {
-
-									@Override
-									public void run() {
-										Path p = getPath(enemy);
-										enemy.setPath(p);
-									}
-									
-								});
-								t.run();
-								//try {
-									//t.join();
-								//} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									//e.printStackTrace();
-								//}
+								enemy.setPath(getPath(enemy));
 								moveEntity(enemy);
 							} else {
 								float[] x = new float[(int) pPath.getCoordinatesX().length - 1];
@@ -286,9 +198,9 @@ public class AStarPathHelper {
 		return current;
 	}
 	
-	private org.andengine.util.algorithm.path.Path findPathViaPathFinder(int fromCol, int fromRow, int toCol, int toRow) {
+/*	private org.andengine.util.algorithm.path.Path findPathViaPathFinder(int fromCol, int fromRow, int toCol, int toRow) {
 		return mAStarPathFinder.findPath(MAX_SEARCH_DEPTH, mPathFinderMap, 0, 0,
 				mTiledMap.getTileColumns(), mTiledMap.getTileRows() - 1, layer,
 				fromCol, fromRow, toCol, toRow, false, mHeuristic, mCostCallback);
-	}
+	}*/
 }

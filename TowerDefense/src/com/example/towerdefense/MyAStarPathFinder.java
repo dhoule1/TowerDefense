@@ -1,301 +1,316 @@
 package com.example.towerdefense;
 
-import org.andengine.util.adt.list.ShiftList;
-import org.andengine.util.adt.map.LongSparseArray;
-import org.andengine.util.adt.queue.IQueue;
-import org.andengine.util.adt.queue.SortedQueue;
-import org.andengine.util.adt.queue.UniqueQueue;
-import org.andengine.util.adt.spatial.bounds.util.IntBoundsUtils;
-import org.andengine.util.algorithm.path.ICostFunction;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.andengine.extension.tmx.TMXLayer;
+import org.andengine.extension.tmx.TMXTile;
+import org.andengine.extension.tmx.TMXTiledMap;
 import org.andengine.util.algorithm.path.IPathFinderMap;
 import org.andengine.util.algorithm.path.Path;
-import org.andengine.util.algorithm.path.astar.AStarPathFinder;
-import org.andengine.util.algorithm.path.astar.IAStarHeuristic;
+import org.andengine.util.algorithm.path.astar.ManhattanHeuristic;
 
 import android.util.Log;
 
-public class MyAStarPathFinder<T> extends AStarPathFinder<T> {
-	public Path findPath(int pMaxSearchDepth,
-			final IPathFinderMap<T> pPathFinderMap, final int pXMin, final int pYMin,
-			final int pXMax, final int pYMax, final T pEntity, final int pFromX,
-			final int pFromY, final int pToX, final int pToY,
-			final boolean pAllowDiagonal, final IAStarHeuristic<T> pAStarHeuristic,
-			final ICostFunction<T> pCostFunction) {
-		return this.findPath(pMaxSearchDepth, pPathFinderMap, pXMin, pYMin, pXMax,
-				pYMax, pEntity, pFromX, pFromY, pToX, pToY, pAllowDiagonal,
-				pAStarHeuristic, pCostFunction, Float.MAX_VALUE, null);
-	}
+public class MyAStarPathFinder {
+	
+	private static final int MAX_DEPTH = 60;
+	
+	private SortedList open;
+	private List<Node> closed;
+	private TMXTiledMap map;
+	private TMXLayer layer;
+	private TMXTile startTile;
+	private List<TMXTile> blockedTiles;
+	private Node[][] nodes;
+	private ManhattanHeuristic<TMXLayer> mHeuristic;
+	private IPathFinderMap<TMXLayer> mPathFinderMap;
+	
+	private int toX;
+	private int toY;
+	
+	
+	public MyAStarPathFinder() {
+		open = new SortedList();
+		closed = new ArrayList<Node>();
+		
+		final GameScene scene = GameScene.getSharedInstance();
+		
+		toX = scene.getEndTile().getTileColumn();
+		toY = scene.getEndTile().getTileRow();
+		
+		startTile = scene.getStartTile();
+		
+		ManhattanHeuristic<TMXLayer> mHeuristic = new ManhattanHeuristic<TMXLayer>();
+		this.mHeuristic = mHeuristic;
+		
+		mPathFinderMap = new IPathFinderMap<TMXLayer>() {
 
-	public Path findPath(int pMaxSearchDepth,
-			final IPathFinderMap<T> pPathFinderMap, final int pXMin, final int pYMin,
-			final int pXMax, final int pYMax, final T pEntity, final int pFromX,
-			final int pFromY, final int pToX, final int pToY,
-			final boolean pAllowDiagonal, final IAStarHeuristic<T> pAStarHeuristic,
-			final ICostFunction<T> pCostFunction, final float pMaxCost,
-			final IPathFinderListener<T> pPathFinderListener) {
-		if (((pFromX == pToX) && (pFromY == pToY))
-				|| pPathFinderMap.isBlocked(pFromX, pFromY, pEntity)
-				|| pPathFinderMap.isBlocked(pToX, pToY, pEntity)) {
-			return null;
+			@Override
+			public boolean isBlocked(int pX, int pY, TMXLayer pTMXLayer) {
+				return false;
+			}
+		};
+		
+		blockedTiles = scene.getBlockedList();
+		
+		map = scene.getTMXTiledMap();
+		
+		layer = map.getTMXLayers().get(0);
+		
+		TMXTile[][] tiles = layer.getTMXTiles();
+
+		Node[][] nodes = new Node[tiles.length][tiles[0].length];
+		
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles[0].length; j++) {
+				Node node = new Node(j,i);				
+				nodes[i][j] = node;
+			}
 		}
-		// TODO: Add a sequence that allow the player to move if he is on a blocked
-		// object
-
-		/* Drag some fields to local variables. */
-		final Node fromNode = new Node(pFromX, pFromY,
-				pAStarHeuristic.getExpectedRestCost(pPathFinderMap, pEntity, pFromX,
-						pFromY, pToX, pToY));
-
-		final long fromNodeID = fromNode.mID;
-		final long toNodeID = Node.calculateID(pToX, pToY);
-
-		final LongSparseArray<Node> visitedNodes = new LongSparseArray<Node>();
-		final LongSparseArray<Node> openNodes = new LongSparseArray<Node>();
-		final IQueue<Node> sortedOpenNodes = new UniqueQueue<Node>(
-				new SortedQueue<Node>(new ShiftList<Node>()));
-
-		final boolean allowDiagonalMovement = pAllowDiagonal;
-
-		/* Initialize algorithm. */
-		openNodes.put(fromNodeID, fromNode);
-		sortedOpenNodes.enter(fromNode);
-
-		Node currentNode = null;
+		this.nodes = nodes;
+		
+	}
+	
+	public Path findPath(Enemy enemy) {
+		
+		long start = System.currentTimeMillis();
+		
+		TMXTile tile = (enemy == null) ? startTile : layer.getTMXTileAt(enemy.getX(), enemy.getY());
+		
+		int fromX = tile.getTileColumn();
+		int fromY = tile.getTileRow();
+		TMXTile fromTile = layer.getTMXTile(fromX, fromY);
+		Node fromNode = nodes[fromTile.getTileRow()][fromTile.getTileColumn()];
+		fromNode.setCost(0.0f);
+		fromNode.setDepth(0);
+		fromNode.setParent(null);
+	
+		Node toNode = nodes[toY][toX];
+		
+		closed.clear();
+		open.clear(); 
+		open.add(fromNode);
+		
+		int cycleCount = 0;
 		int currentDepth = 0;
-
-		/*
-		 * ADDED: Search Depth
-		 */
-		int numOfCycles = 0;
-		while (currentDepth < pMaxSearchDepth && openNodes.size() > 0) {
-			/* The first Node in the open list is the one with the lowest cost. */
-			currentNode = sortedOpenNodes.poll();
-
-			// Try to 'test' each tower to see if it will block the path of the waves
-			long currentNodeID = 0;
-			try {
-				currentNodeID = currentNode.mID;
-			} catch (Exception e) {
-				return null;
-			}
-			if (currentNodeID == toNodeID) {
-				break;
-			}
-
-			visitedNodes.put(currentNodeID, currentNode);
-
-			/* Loop over all neighbors of this position. */
-			for (int dX = -1; dX <= 1; dX++) {
-				for (int dY = -1; dY <= 1; dY++) {
-					if ((dX == 0) && (dY == 0)) {
-						continue;
-					}
-
-					if (!allowDiagonalMovement && (dX != 0) && (dY != 0)) {
-						continue;
-					}
-					final int neighborNodeX = dX + currentNode.mX;
-					final int neighborNodeY = dY + currentNode.mY;
-					final long neighborNodeID = Node.calculateID(neighborNodeX,
-							neighborNodeY);
-
-					if (!IntBoundsUtils.contains(pXMin, pYMin, pXMax, pYMax,
-							neighborNodeX, neighborNodeY)
-							|| pPathFinderMap
-									.isBlocked(neighborNodeX, neighborNodeY, pEntity)) {
-						continue;
-					}
-					if (visitedNodes.indexOfKey(neighborNodeID) >= 0) {
-						continue;
-					}
-
-					Node neighborNode = openNodes.get(neighborNodeID);
-					final boolean neighborNodeIsNew;
-					/* Check if neighbor exists. */
-					if (neighborNode == null) {
-						neighborNodeIsNew = true;
-						neighborNode = new Node(neighborNodeX, neighborNodeY,
-								pAStarHeuristic.getExpectedRestCost(pPathFinderMap, pEntity,
-										neighborNodeX, neighborNodeY, pToX, pToY));
-					} else {
-						neighborNodeIsNew = false;
-					}
-
-					/*
-					 * Update cost of neighbor as cost of current plus step from current
-					 * to neighbor.
-					 */
-					final float costFromCurrentToNeigbor = pCostFunction.getCost(
-							pPathFinderMap, currentNode.mX, currentNode.mY, neighborNodeX,
-							neighborNodeY, pEntity);
-					final float neighborNodeCost = currentNode.mCost
-							+ costFromCurrentToNeigbor;
-					if (neighborNodeCost > pMaxCost) {
-						/* Too expensive -> remove if isn't a new node. */
-						if (!neighborNodeIsNew) {
-							openNodes.remove(neighborNodeID);
+		while((open.size() != 0) && (currentDepth < MAX_DEPTH)) {
+			cycleCount++;
+			
+			Node current = (Node)open.first();
+			
+			if (current == toNode) break;
+			
+			open.remove(current);
+			closed.add(current);
+			
+			for (int x = -1; x < 2; x++) {
+				for (int y = -1; y < 2; y++) {
+					if (x == 0 && y == 0) continue;
+					if (x != 0 && y !=0) continue;
+					
+					
+					int xp = x + current.getX();
+					int yp = y + current.getY();
+					
+					if (isValidTile(current.getX(), current.getY(), xp, yp)) {
+						float nextStepCost = current.getCost() + 1;
+						Node neighbor = nodes[yp][xp];
+						
+						if (nextStepCost < neighbor.getCost()) {
+							if (open.contains(neighbor)) open.remove(neighbor);
+							if (closed.contains(neighbor)) closed.remove(neighbor);
 						}
-					} else {
-						neighborNode.setParent(currentNode, costFromCurrentToNeigbor);
-						if (neighborNodeIsNew) {
-							openNodes.put(neighborNodeID, neighborNode);
-						} else {
-							/* Remove so that re-insertion puts it to the correct spot. */
-							sortedOpenNodes.remove(neighborNode);
-						}
-
-						sortedOpenNodes.enter(neighborNode);
-
-						if (pPathFinderListener != null) {
-							pPathFinderListener.onVisited(pEntity, neighborNodeX,
-									neighborNodeY);
+						if (!(open.contains(neighbor)) && !(closed.contains(neighbor))) {
+							neighbor.setCost(nextStepCost);
+							neighbor.heuristic = getHeuristicCost(xp, yp, toX, toY);
+							
+							currentDepth = Math.max(currentDepth, neighbor.setParent(current));
+							open.add(neighbor);
 						}
 					}
-					currentDepth = Math.max(currentDepth,
-							neighborNode.setParent(currentNode));
 				}
 			}
-			numOfCycles++;
-			if (numOfCycles > 5000)
-				return null;
 		}
-		Log.i("Cycles", numOfCycles + "");
-
-		/* Cleanup. */
-		// TODO We could just let the GC do its work.
-		visitedNodes.clear();
-		openNodes.clear();
-		sortedOpenNodes.clear();
-
-		/* Check if a path was found. */
-		if (currentNode.mID != toNodeID) {
+		
+		if (nodes[toY][toX].parent == null){
 			return null;
 		}
-
-		/* Calculate path length. */
+		
+		Node target = nodes[toY][toX];
+		
 		int length = 1;
-		Node tmp = currentNode;
-		while (tmp.mID != fromNodeID) {
-			tmp = tmp.mParent;
+		while (target != nodes[fromY][fromX]) {
+			target = target.getParent();
 			length++;
 		}
-
-		/* Traceback path. */
-		final Path path = new Path(length);
+		Path result = new Path(length);
+		
+		target = nodes[toY][toX];
+		
 		int index = length - 1;
-		tmp = currentNode;
-		while (tmp.mID != fromNodeID) {
-			path.set(index, tmp.mX, tmp.mY);
-			tmp = tmp.mParent;
+		while(target != nodes[fromY][fromX]) {
+			result.set(index, target.getX(), target.getY());
+			target = target.getParent();
 			index--;
 		}
-		path.set(0, pFromX, pFromY);
-		return path;
+		
+		result.set(0, fromNode.getX(), fromNode.getY());
+		
+		long end = System.currentTimeMillis();
+		
+		Log.i("Time", end - start+"");
+		Log.i("Cycles", cycleCount+"");
+		
+		return result;
+		
 	}
 
-	// ===========================================================
-	// Inner and Anonymous Classes
-	// ===========================================================
-
-	private static final class Node implements Comparable<Node> {
-		// ===========================================================
-		// Constants
-		// ===========================================================
-
-		// ===========================================================
-		// Fields
-		// ===========================================================
-
-		/* package */Node mParent;
-
-		/* package */final int mX;
-		/* package */final int mY;
-		/* package */final long mID;
-		/* package */final float mExpectedRestCost;
-
-		/* package */float mCost;
-		/* package */float mTotalCost;
-
-		private int mDepth;
-
-		// ===========================================================
-		// Constructors
-		// ===========================================================
-
-		public Node(final int pX, final int pY, final float pExpectedRestCost) {
-			this.mX = pX;
-			this.mY = pY;
-			this.mExpectedRestCost = pExpectedRestCost;
-
-			this.mID = Node.calculateID(pX, pY);
+	private Float getHeuristicCost(int currentX, int currentY, int possibleX, int possibleY) {
+	
+		return mHeuristic.getExpectedRestCost(mPathFinderMap, layer, currentX, currentY, possibleX, possibleY);
+	}
+	
+	private boolean isValidTile(int xc, int yc, int xp, int yp) {
+		TMXTile tile;
+		try{
+			tile = layer.getTMXTile(xp, yp);
+			}catch(Exception e) {
+				return false;
+			}
+		return !(xc == xp && yc == yp) && !blockedTiles.contains(tile);
+	}
+	
+	
+	
+	private class Node implements Comparable<Node>{
+		private Integer x;
+		private Integer y;
+		private Integer depth;
+		private Float cost; 
+		private Float heuristic;
+		private Node parent;
+		
+		public Node(Integer x, Integer y) {
+			this.x = x;
+			this.y = y;
+			cost = 0.0f;
+		}
+		
+		public Integer getX() {
+			return x;
 		}
 
-		// ===========================================================
-		// Getter & Setter
-		// ===========================================================
-
-		public void setParent(final Node pParent, final float pCost) {
-			this.mParent = pParent;
-			this.mCost = pCost;
-			this.mTotalCost = pCost + this.mExpectedRestCost;
+		public void setX(Integer x) {
+			this.x = x;
 		}
 
+		public Integer getY() {
+			return y;
+		}
+
+		public void setY(Integer y) {
+			this.y = y;
+		}
+
+		public void setCost(Float cost) {
+			this.cost = cost;
+		}
+		public Float getCost() {
+			return this.cost;
+		}
+		public void setDepth(Integer depth) {
+			this.depth = depth;
+		}
+		public Integer getDepth() {
+			return this.depth;
+		}
 		public int setParent(final Node pParent) {
-			this.mDepth = pParent.mDepth + 1;
-			this.mParent = pParent;
-
-			return this.mDepth;
-		}
-
-		// ===========================================================
-		// Methods for/from SuperClass/Interfaces
-		// ===========================================================
-
-		@Override
-		public int compareTo(final Node pNode) {
-			final float diff = this.mTotalCost - pNode.mTotalCost;
-			if (diff > 0) {
-				return 1;
-			} else if (diff < 0) {
-				return -1;
-			} else {
+			if (pParent == null) {
+				this.parent = null;
 				return 0;
 			}
+			this.depth = pParent.depth + 1;
+			this.parent = pParent;
+
+			return this.depth;
 		}
+		public Node getParent() {
+			return this.parent;
+		}
+		
 
 		@Override
-		public boolean equals(final Object pOther) {
-			if (this == pOther) {
-				return true;
-			} else if (pOther == null) {
-				return false;
-			} else if (this.getClass() != pOther.getClass()) {
-				return false;
-			}
-			return this.equals((Node) pOther);
+		public int compareTo(Node other) {
+			float f = heuristic + cost;
+			float of = other.heuristic + other.cost;
+			
+			if (f < of) return -1;
+			else if (f > of) return 1;
+			else return 0;
 		}
-
-		@Override
-		public String toString() {
-			return this.getClass().getSimpleName() + " [x=" + this.mX + ", y="
-					+ this.mY + "]";
+		
+	}
+	private class SortedList {
+		
+		
+		/** The list of elements */
+		private ArrayList<Node> list = new ArrayList<Node>();
+		
+		/**
+		 * Retrieve the first element from the list
+		 *  
+		 * @return The first element from the list
+		 */
+		public Object first() {
+			return list.get(0);
 		}
-
-		// ===========================================================
-		// Methods
-		// ===========================================================
-
-		public static long calculateID(final int pX, final int pY) {
-			return (((long) pX) << 32) | pY;
+		
+		/**
+		 * Empty the list
+		 */
+		public void clear() {
+			list.clear();
 		}
-
-		public boolean equals(final Node pNode) {
-			return this.mID == pNode.mID;
+		
+		/**
+		 * Add an element to the list - causes sorting
+		 * 
+		 * @param o The element to add
+		 */
+		public void add(Node node) {
+			list.add(node);
+			Collections.sort(list);
 		}
-
-		// ===========================================================
-		// Inner and Anonymous Classes
-		// ===========================================================
+		
+		/**
+		 * Remove an element from the list
+		 * 
+		 * @param o The element to remove
+		 */
+		public void remove(Object o) {
+			list.remove(o);
+		}
+	
+		/**
+		 * Get the number of elements in the list
+		 * 
+		 * @return The number of element in the list
+ 		 */
+		public int size() {
+			return list.size();
+		}
+		
+		/**
+		 * Check if an element is in the list
+		 * 
+		 * @param o The element to search for
+		 * @return True if the element is in the list
+		 */
+		public boolean contains(Object o) {
+			return list.contains(o);
+		}
 	}
 
 }

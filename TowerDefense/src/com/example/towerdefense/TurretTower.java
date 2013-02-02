@@ -6,9 +6,10 @@ public class TurretTower extends Tower{
 	
 	private static final float SCOPE = 50.0f;
 	private static final float TIME_BETWEEN_SHOTS = 1.0f;
+	public static final Integer COST = 2;
 
 	public TurretTower(float pX, float pY, ITextureRegion pTextureRegion) {
-		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, pTextureRegion, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, COST, pTextureRegion, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 	}
 
 }

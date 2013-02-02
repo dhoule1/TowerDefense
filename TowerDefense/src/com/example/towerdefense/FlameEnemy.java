@@ -8,16 +8,17 @@ public class FlameEnemy extends Enemy{
 	private final static ITextureRegion pTextureRegion = TowerDefenseActivity.getSharedInstance().getFlameEnemyTextureRegion();
 	private final static float HEALTH = 3;
 	private final static float TRAVEL_SPEED = 0.5f; 
+	private final static Integer WORTH = 1;
 	private Path mPath;
 
 	public FlameEnemy(ITextureRegion region) {
 		
-		super(region, 0.0f, 0.0f, HEALTH, TRAVEL_SPEED);
+		super(region, 0.0f, 0.0f, HEALTH, TRAVEL_SPEED, WORTH);
 		this.setScale(2.0f);
 	}
 	
 	public FlameEnemy(float x, float y) {
-		super(pTextureRegion, x, y, HEALTH, TRAVEL_SPEED);
+		super(pTextureRegion, x, y, HEALTH, TRAVEL_SPEED, WORTH);
 		this.setScale(2.0f);
 	}
 	

@@ -38,6 +38,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	//static fields referring to specific tiles on the map
 	private static final int TILE_WIDTH = 40;
 	private static final int TILE_HEIGHT = 40;
+	private static final int[] START_TILE_ID = new int[]{5,0};
 	private static final int[] END_TILE_ID = new int[]{5,18};
 	
 	//Reference of Activity context
@@ -56,6 +57,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	//The map and layer of the field
 	private TMXTiledMap mTMXTiledMap;
 	private TMXLayer tmxLayer;
+	
+	
+	private BottomPanel panel;
 	
 	//Turret option on the HUD
 	private TowerTile turretTile;
@@ -93,6 +97,13 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	private boolean initializedNewWave;
 	
 	
+	//Money!
+	private Integer money;
+	
+	//Lives
+	private Integer lives;
+	
+	
 	//***********************************************************
 	//CONSTRUCTOR
 	//***********************************************************	
@@ -118,9 +129,8 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			final TMXLoader tmxLoader = new TMXLoader(activity.getAssets(), activity.getEngine().getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, activity.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
 				@Override
 				public void onTMXTileWithPropertiesCreated(final TMXTiledMap pTMXTiledMap, final TMXLayer pTMXLayer, final TMXTile pTMXTile, final TMXProperties<TMXTileProperty> pTMXTileProperties) {
-						//pTMXTiledMap.getTMXLayers().get(0).getTMXTiles();
 				}});
-			this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/path.tmx");
+			this.mTMXTiledMap = tmxLoader.loadFromAsset("tmx/new_grass_path.tmx");
 		} catch (final TMXLoadException e) {
 			Debug.e(e);
 		}
@@ -146,23 +156,30 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		endTile = null;
 		outer: for (int i = 0; i < tiles.length-1; i++) {
 			for (int j = 0; j < tiles[0].length-1; j++) {
-				try {
+/*				try {
 					if (tiles[i][j].getTMXTileProperties(this.mTMXTiledMap).containsTMXProperty("start", "true")) {
 						startTile = tiles[i][j];
 					}
 				}catch (NullPointerException e) {
 					//The presence of the TMCTileProperties needs to be handled better by the TMXTile
 					  //Ex: hasTMXTileProperties()
+				}*/
+				if (i == START_TILE_ID[0] && j == START_TILE_ID[1]) {
+					startTile = tiles[i][j];
 				}
-			  if (i == END_TILE_ID[0] && j == END_TILE_ID[1]) {
+				else if (i == END_TILE_ID[0] && j == END_TILE_ID[1]) {
 						endTile = tiles[i][j+1];
 						break outer;
 				}
+			  
 			}
 		}
 		
+		money = 10;
+		lives = 20;
+		
 	  //Initializes the HUD
-		BottomPanel panel = new BottomPanel(mCamera, mTMXTiledMap);		
+		panel = new BottomPanel(mCamera, mTMXTiledMap);		
 		this.attachChild(panel);
 		
 		turretTile = new TowerTile(activity.getTurretTowerRegion());
@@ -211,6 +228,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		
 		this.registerUpdateHandler(collisionDetect);
 		
+		
 	}
 	//**********************************************************
 	//USER-CREATED METHODS
@@ -237,6 +255,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	public TMXTile getStartTile() {
 		return this.startTile;
 	}
+	public TMXTile getEndTile() {
+		return this.endTile;
+	}
 	public List<TMXTile> getBlockedList() {
 		return blockedTileList;
 	}
@@ -255,6 +276,29 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	public void incrementDeadCount() {
 		this.deadEnemies++;
 	}
+	public Integer getMoney() {
+		return money;
+	}
+	public boolean canAfford(Integer m) {
+		return money - m > 0;
+	}
+	public void addAmount(Integer cost) {
+		money+=cost;
+		this.panel.setMoneyText(money);
+	}
+	public void payAmount(Integer cost) {
+		if (cost <= money) {
+			money -= cost;
+			this.panel.setMoneyText(money);
+		}
+	}
+	public void loseALife() {
+		lives--;
+		this.panel.setLifeText(lives);
+	}
+	public Integer getLives() {
+		return lives;
+	}
 	
 	/**
 	 * Initializes paths and move modifiers of all enemies in the next wave
@@ -265,6 +309,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		waveGenerator.initWave(waveCount%4);
 		currentWave = waveGenerator.get(waveCount%4);
 		waveCount++;
+		panel.setWaveText(waveCount);
 
 		this.aStarHelper.resetNumberOfEnemiesFinished();
 		this.aStarHelper.finishWave();
@@ -277,7 +322,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	
 	public void removeCurrentTower() {
 		try {
-			blockedTileList.remove(currentTile);
+			if (inLegitimatePosition(currentTile)) addAmount(dragTower.getCost());
 			removeTower(dragTower);
 		}catch(Exception e){}
 	}
@@ -437,6 +482,12 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		}
 	}
 	
+	private boolean inLegitimatePosition(TMXTile currentTile) {
+		return !(currentTile.equals(endTile) 
+		|| currentTile.equals(startTile) 
+		|| blockedTileList.contains(currentTile));
+	}
+	
 	//***************************************************
 	//OVERRIDEN METHODS
 	//***************************************************
@@ -514,7 +565,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
   	}
 		if (pSceneTouchEvent.isActionMove()) {
-			if (turretTile.getOnTouched() && !towerMove) {
+			if (turretTile.getOnTouched() && !towerMove && canAfford(TurretTower.COST)) {
 				turretTile.returnOnTouched();
 				/**
 				 * TODO See if we actually need a check here
@@ -548,9 +599,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 					}
 
 					
-					if (currentTile.equals(endTile) 
-							|| currentTile.equals(startTile) 
-							|| blockedTileList.contains(currentTile)) {
+					if (!inLegitimatePosition(currentTile)) {
 						highlightTile.setColor(Color.RED);
 					}
 					else {
@@ -587,6 +636,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  			
 	  			towers.add(dragTower);
 	  			this.detachChild(dragTower.getReticle());
+	  			
+	  			//Nothing is free in this world
+					this.payAmount(dragTower.getCost());
 	  			
 	  			//If we are in the middle of a wave, the AStarPath class must update
 	  			//the path since there is now a new tower on the field

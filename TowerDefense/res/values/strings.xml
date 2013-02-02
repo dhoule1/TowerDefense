@@ -4,5 +4,8 @@
     <string name="app_name">TowerDefense</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="money_text">Money: $</string>
+    <string name="wave_text">Wave:</string>
+    <string name="life_text">Lives:</string>
 
 </resources>

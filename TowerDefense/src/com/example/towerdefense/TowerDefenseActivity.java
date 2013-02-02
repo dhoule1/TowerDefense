@@ -8,12 +8,16 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXTiledMap;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.font.FontFactory;
+import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
+import android.graphics.Color;
 import android.view.KeyEvent;
 
 public class TowerDefenseActivity extends SimpleBaseGameActivity {
@@ -32,6 +36,8 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	private TextureRegion flameEnemyRegion;
 	private TextureRegion turretTowerRegion;
 	private TextureRegion startButtonRegion;
+	
+	private Font inGameFont;
 
 	//OVERRIDDEN METHODS
 	@Override
@@ -54,6 +60,12 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "turret.png",w+15,h); //80x80
 		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w+96,h); //169x169
 		mBitmapTextureAtlas.load();	
+		
+		ITexture fontTexture = new BitmapTextureAtlas(this.getTextureManager(),200,200);
+		FontFactory.setAssetBasePath("font/");
+		inGameFont = FontFactory.createFromAsset(this.getFontManager(), fontTexture, this.getAssets(), "AeroviasBrasilNF.ttf", 50, true, Color.WHITE);
+		//fontTexture.load();
+		inGameFont.load();
 	}
 
 	@Override
@@ -96,5 +108,8 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	}
 	public TextureRegion getStartButtonRegion() {
 		return this.startButtonRegion;
+	}
+	public Font getInGameFont() {
+		return this.inGameFont;
 	}
 }

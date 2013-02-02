@@ -22,8 +22,9 @@ public class Tower extends Sprite{
 	private Enemy lockedOn;
 	private float timeInbetweenShots;
 	private final static Object LOCK = new Object();
+	private Integer cost;
 
-	public Tower(float pX, float pY, float r,float t, ITextureRegion pTextureRegion,
+	public Tower(float pX, float pY, float r,float t, Integer c, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
 		radius = r;
@@ -35,6 +36,7 @@ public class Tower extends Sprite{
 		reticle.setLineWidth(2.0f);
 		reticle.setColor(Color.BLACK);
 		timeInbetweenShots = t;
+		cost = c;
 	}
 	
 	@Override 
@@ -56,6 +58,9 @@ public class Tower extends Sprite{
 	public Enemy getLockedOn() {
 		return this.lockedOn;
 	}
+	public Integer getCost() {
+		return this.cost;
+	}
 	
 	
 	public void shoot(final Enemy e) {
@@ -67,11 +72,13 @@ public class Tower extends Sprite{
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 					e.hit();
 					if (e.isDead() && e.getUserData()!="dead") {
-						Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
-						e.destroy();
 						GameScene scene = GameScene.getSharedInstance();
+						Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
+						scene.addAmount(e.getWorth());
+						e.destroy();
 						synchronized(LOCK) {
 							scene.incrementDeadCount();
+							LOCK.notify();
 						}
 						scene.seeIffWaveFinished();
 					}
