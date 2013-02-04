@@ -38,10 +38,14 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		startTile = scene.getStartTile();
 		aStarHelper = scene.getAStarHelper(); 
 		
-		this.put(0, new Wave(createEnemyArray(FlameEnemy.class, 3)));
-		this.put(1, new Wave(createEnemyArray(FlameEnemy.class, 5)));
-		this.put(2, new Wave(createEnemyArray(FlameEnemy.class, 7)));
-		this.put(3, new Wave(createEnemyArray(FlameEnemy.class, 9)));
+		//this.put(0, new Wave(createEnemyArray(FlameEnemy.class, 3)));
+		//this.put(1, new Wave(createEnemyArray(FlameEnemy.class, 5)));
+		//this.put(2, new Wave(createEnemyArray(FlameEnemy.class, 7)));
+		//this.put(3, new Wave(createEnemyArray(FlameEnemy.class, 9)));
+		
+		for (int i = 0; i < 100; i++) {
+			this.put(i, new Wave(createEnemyArray(FlameEnemy.class, (i+1) *2)));
+		}
 	}
 	
 	

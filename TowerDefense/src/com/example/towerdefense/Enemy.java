@@ -7,7 +7,8 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 
 public class Enemy extends Sprite{
 
-	private float health;
+	private int health;
+	private int maxHealth;
 	private float speed;
 	private Integer worth;
 	private Path path;
@@ -15,13 +16,22 @@ public class Enemy extends Sprite{
 	private boolean needToUpdatePath;
 	private int index;
 
-	public Enemy(ITextureRegion pTextureRegion, float x, float y, float health, float speed, Integer worth) {
+	public Enemy(ITextureRegion pTextureRegion, float x, float y, int health, float speed, Integer worth) {
 		super(x, y, pTextureRegion, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 		this.health = health;
+		this.maxHealth = health;
 		this.speed = speed;
 		this.worth = worth;
 		this.path = null;
 		this.needToUpdatePath = false;
+	}
+
+	public float getXReal() {
+		return this.getX() + this.getWidthScaled()/2;
+	}
+
+	public float getYReal() {
+		return this.getY() + this.getHeightScaled()/2;
 	}
 	
 	public void destroy() {
@@ -35,13 +45,14 @@ public class Enemy extends Sprite{
 			}
 		});
 		this.setUserData("dead");
-		this.returnHealthToNormal();
 	}
 	
-	public void returnHealthToNormal() {}
+	public void returnHealthToNormal() {
+		this.health = this.maxHealth;
+	}
 	
-	public void hit() {
-		health--;
+	public void hit(int p) {
+		health-=p;
 	}
 	
 	public boolean isDead() {
@@ -52,7 +63,7 @@ public class Enemy extends Sprite{
 		return health;
 	}
 
-	public void setHealth(float health) {
+	public void setHealth(int health) {
 		this.health = health;
 	}
 

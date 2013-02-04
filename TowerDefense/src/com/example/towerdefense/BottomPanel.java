@@ -1,7 +1,11 @@
 package com.example.towerdefense;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.HUD;
+import org.andengine.entity.primitive.Line;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.extension.tmx.TMXTiledMap;
@@ -10,6 +14,7 @@ import org.andengine.util.color.Color;
 
 public class BottomPanel extends HUD{
 	
+	private List<TowerTile> tiles;
 	private float distanceFromMapToScene;
 	private ZoomCamera mCamera;
 	private Text money;
@@ -21,6 +26,8 @@ public class BottomPanel extends HUD{
 	
 	public BottomPanel(ZoomCamera camera, TMXTiledMap map) {
 		super();
+		
+		tiles = new ArrayList<TowerTile>();
 		
 		this.mCamera = camera;
 		
@@ -63,9 +70,20 @@ public class BottomPanel extends HUD{
 	}
 	
 	public void placeTowerAccess(TowerTile tile, int count) {
+		tiles.add(tile);
+		
 		tile.returnOnTouched();
 		
-		tile.getFrame().setPosition((count-1)*distanceFromMapToScene, this.getY());
+		if (count > 1) {
+			Line line = new Line(0,0,0,0,TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+			line.setColor(Color.BLACK);
+			line.setLineWidth(10.0f);
+			line.setPosition(((count-1)*tile.getFrame().getWidthScaled()) + line.getLineWidth()/4.9f, this.getY() + tile.getFrame().getHeightScaled(),
+					((count-1)*tile.getFrame().getWidthScaled()) + line.getLineWidth()/4.9f, this.getY());
+			this.attachChild(line);
+		}
+		
+		tile.getFrame().setPosition((count-1)*tile.getFrame().getWidthScaled(), this.getY());
 		tile.getSprite().setPosition(tile.getFrame());
 		
 		this.attachChild(tile.getFrame());
@@ -80,6 +98,9 @@ public class BottomPanel extends HUD{
 		button.setPosition(mCamera.getBoundsWidth() - button.getWidthScaled()*1.55f, this.getY() - button.getHeightScaled() /1.8f);
 	}
 	
+	public List<TowerTile> getTiles() {
+		return tiles;
+	}
 	public void setMoneyText(Integer text) {
 		money.setText(moneyText+text);
 	}

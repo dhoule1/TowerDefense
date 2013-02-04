@@ -1,19 +1,32 @@
 package com.example.towerdefense;
 
+import java.util.HashMap;
+
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXTiledMap;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.color.Color;
 
 public class TowerTile {
 	
+	static HashMap<TextureRegion, Class<? extends Tower>> towerMap;
+  
+  private Class<? extends Tower> T;
 	private Sprite sprite;
 	private Rectangle frame;
 	private boolean isTouched;	
+	
+	public static void initializeMap() {
+		TowerDefenseActivity activity = TowerDefenseActivity.getSharedInstance();
+    HashMap<TextureRegion, Class<? extends Tower>> aMap = new HashMap<TextureRegion, Class<? extends Tower>>();
+    aMap.put(activity.getTurretTowerRegion(), TurretTower.class);
+    aMap.put(activity.getDartTowerRegion(), DartTower.class);
+    towerMap = aMap;	
+	}
 	
 	
 	//*******************Getters and Setters*********************//
@@ -24,10 +37,15 @@ public class TowerTile {
 		return sprite;
 	}
 	public boolean getOnTouched() {
-		return isTouched;
+		boolean result  = isTouched;
+		if (isTouched) isTouched=!isTouched;
+		return result;
 	}
 	public void returnOnTouched() {
 		isTouched = false;
+	}
+	public Class<? extends Tower> getTowerClass() {
+		return T;
 	}
 	
 	
@@ -38,7 +56,8 @@ public class TowerTile {
 	 * @param region
 	 * @param number
 	 */
-	public TowerTile(ITextureRegion region) {
+	public TowerTile(TextureRegion region) {
+		T = towerMap.get(region);
 		isTouched = false;
 		TowerDefenseActivity activity = TowerDefenseActivity.getSharedInstance();
 		ZoomCamera camera = activity.getCamera();
@@ -46,6 +65,7 @@ public class TowerTile {
 		TMXTiledMap map = GameScene.getSharedInstance().getTMXTiledMap();
 		
 		Float height = camera.getHeight() - map.getTileRows()*map.getTileHeight();
+		
 		
 		//frame = new Rectangle((number-1)*height, lowerPanel.getY(), height, height, vbom) {
 		frame = new Rectangle(0.0f,0.0f, height, height, vbom) {
@@ -58,5 +78,14 @@ public class TowerTile {
 		frame.setColor(Color.WHITE);
 		sprite = new Sprite(0,0, region, vbom);
 	}
-
+	
+/*	public static TextureRegion getTextureRegionFromClass(Class<? extends Tower> T) {
+		for (Entry<TextureRegion, Class<? extends Tower>> entry : towerMap.entrySet()) {
+      if (T.equals(entry.getValue())) {
+          return entry.getKey();
+      }
+		}
+		return null;
+	}
+*/
 }

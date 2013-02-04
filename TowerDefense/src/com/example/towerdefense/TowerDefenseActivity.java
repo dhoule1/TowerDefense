@@ -34,7 +34,11 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	private TMXLayer tmxLayer;
 	
 	private TextureRegion flameEnemyRegion;
+	
 	private TextureRegion turretTowerRegion;
+	private TextureRegion dartTowerRegion;
+	private TextureRegion dartBulletRegion;
+	
 	private TextureRegion startButtonRegion;
 	
 	private Font inGameFont;
@@ -53,12 +57,22 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	@Override
 	protected void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		final BitmapTextureAtlas mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 324, 324, TextureOptions.DEFAULT);
+		final BitmapTextureAtlas mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 1000, 1000, TextureOptions.DEFAULT);
 		int w = 0;
 		int h = 0;
+		
+		//ENEMIES
 		flameEnemyRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "flame.png",w,h); //14x27
-		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "turret.png",w+15,h); //80x80
-		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w+96,h); //169x169
+		
+		//TOWERS
+		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "turret.png",w+=15,h); //80x80
+		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "dart_tower.png",w+=81,h); //80x80
+		
+		//BULLETS
+		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "dart.png",w+=81,h); //249x71
+		
+		//MISC
+		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w+=250,h); //169x169
 		mBitmapTextureAtlas.load();	
 		
 		ITexture fontTexture = new BitmapTextureAtlas(this.getTextureManager(),200,200);
@@ -105,6 +119,12 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	}
 	public TextureRegion getTurretTowerRegion() {
 		return this.turretTowerRegion;
+	}
+	public TextureRegion getDartTowerRegion() {
+		return this.dartTowerRegion;
+	}
+	public TextureRegion getDartBulletRegion() {
+		return this.dartBulletRegion;
 	}
 	public TextureRegion getStartButtonRegion() {
 		return this.startButtonRegion;

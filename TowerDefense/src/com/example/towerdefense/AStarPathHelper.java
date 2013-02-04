@@ -58,15 +58,12 @@ public class AStarPathHelper {
 	}
 	public void finishWave() {
 		mHasFinishedPath = true;
+		currentlyFinished = 0;
 	}
 	
 	public int getNumberOfEnemiesFinished() {
 		return currentlyFinished;
 	}
-	public void resetNumberOfEnemiesFinished() {
-		currentlyFinished = 0;
-	}
-	
 	public void doneWithPath() {
 		mHasFinishedPath = true;
 	}
@@ -197,10 +194,4 @@ public class AStarPathHelper {
 		}
 		return current;
 	}
-	
-/*	private org.andengine.util.algorithm.path.Path findPathViaPathFinder(int fromCol, int fromRow, int toCol, int toRow) {
-		return mAStarPathFinder.findPath(MAX_SEARCH_DEPTH, mPathFinderMap, 0, 0,
-				mTiledMap.getTileColumns(), mTiledMap.getTileRows() - 1, layer,
-				fromCol, fromRow, toCol, toRow, false, mHeuristic, mCostCallback);
-	}*/
 }

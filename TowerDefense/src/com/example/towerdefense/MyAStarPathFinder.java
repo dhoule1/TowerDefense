@@ -86,6 +86,9 @@ public class MyAStarPathFinder {
 		fromNode.setCost(0.0f);
 		fromNode.setDepth(0);
 		fromNode.setParent(null);
+		
+		//need to reset the parent of the toNode.
+		nodes[toY][toX].parent = null;
 	
 		Node toNode = nodes[toY][toX];
 		
@@ -134,9 +137,11 @@ public class MyAStarPathFinder {
 			}
 		}
 		
-		if (nodes[toY][toX].parent == null){
-			return null;
-		}
+		//Log.i("Parent of toNode", "Size: "+nodes[toY][toX].parent);
+		
+		if (nodes[toY][toX].parent == null) return null;
+		//if (cycleCount == 1) return null;
+
 		
 		Node target = nodes[toY][toX];
 		
@@ -145,6 +150,7 @@ public class MyAStarPathFinder {
 			target = target.getParent();
 			length++;
 		}
+		Log.i("Length of Path", "Length: "+length);
 		Path result = new Path(length);
 		
 		target = nodes[toY][toX];
@@ -179,10 +185,21 @@ public class MyAStarPathFinder {
 			}catch(Exception e) {
 				return false;
 			}
+		//Log.i("Valid", "Valid Placement? "+(!(xc == xp && yc == yp) && !blockedTiles.contains(tile)));
 		return !(xc == xp && yc == yp) && !blockedTiles.contains(tile);
 	}
 	
 	
+	//===============================================================
+	//INNER CLASSES
+	//===============================================================
+	
+	/**
+	 * TODO
+	 * SO UGLY, fix it pl0x
+	 * @author Dan
+	 *
+	 */
 	
 	private class Node implements Comparable<Node>{
 		private Integer x;
