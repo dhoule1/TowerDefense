@@ -7,7 +7,7 @@ public class DartBullet extends Bullet{
 
 	public DartBullet(TextureRegion region) {
 		super(region, SPEED);
-		this.setScale(0.2f);
+		this.setScale(0.15f);
 	}
 
 }

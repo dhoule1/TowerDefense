@@ -8,6 +8,7 @@ import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.handler.runnable.RunnableHandler;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.entity.primitive.Rectangle;
+import org.andengine.entity.primitive.Vector2;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
@@ -68,7 +69,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	private TowerTile dartTile;
 	
 	//Start button on the HUD
-	private Sprite startButton;
+	private Sprite startButton;	
 	
 	//The tower in 'limbo' when it is dragged from the HUD to the scene itself
 	private Tower dragTower;
@@ -79,6 +80,8 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	
 	//List of towers on the field
 	private List<Tower> towers;
+	
+	private Vector2 downCoords;
 	
 	//A-Star path variables
 	private TMXTile startTile;
@@ -204,8 +207,15 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		startButton.setScale(0.473372781f);
 		panel.placeStartButton(startButton);
 		
+	  //Getting texture regions for submenu items
+		SubMenuManager.getDeleteRegion(activity.getDeleteOptionRegion());
+		SubMenuManager.getUpgradeRegion(activity.getUpgradeOptionRegion());
+		SubMenuManager.getReticalRegion(activity.getTowerSightRegion());
+		
 		//Initializing tower array
 		towers = new ArrayList<Tower>();
+		
+		downCoords = new Vector2();
 		
 		blockedTileList = new ArrayList<TMXTile>();
 		
@@ -268,6 +278,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	public Wave getCurrentWave() {
 		return currentWave;
 	}
+	public List<Tower> getTowers() {
+		return towers;
+	}
 	public AStarPathHelper getAStarHelper() {
 		return aStarHelper;
 	}
@@ -320,7 +333,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		this.deadEnemies = 0;
 		
 		/**
-		 * TODO Just for debugging
+		 * Just for debugging
 		 */
 		for (Enemy enemy:currentWave.getEnemies()) {
 			enemy.setUserData(null);
@@ -387,13 +400,19 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * Removes a tower from the field
 	 * @param Tower t
 	 */
-	private void removeTower(final Tower t) {
+	public void removeTower(final Tower t) {
+		Log.i("Delete Before", "Deleting Tower "+blockedTileList.size());
+		try {
+			TMXTile tile = tmxLayer.getTMXTileAt(t.getX() + TILE_WIDTH/2, t.getY() + TILE_WIDTH/2);
+			if (blockedTileList.contains(tile)) blockedTileList.remove(tile);
+		}catch(Exception e){Log.i("ERROR", e.getMessage());}
+		Log.i("Delete After", "Deleting Tower "+blockedTileList.size());
 		activity.runOnUpdateThread(new Runnable() {
 
 			@Override
 			public void run() {
 				t.detachSelf();
-				t.getReticle().detachSelf();
+				SubMenuManager.getReticle(t).detachSelf();
 				t.clearEntityModifiers();
 				t.clearUpdateHandlers();
 			}	
@@ -401,11 +420,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		
 		if (towers.contains(t)) {
 			towers.remove(t);
-		}
-		
-		TMXTile tile = tmxLayer.getTMXTileAt(highlightTile.getX(), highlightTile.getY());
-		if (blockedTileList.contains(tile)) blockedTileList.remove(tile);
-		
+		}		
 	}	
 	
 	/**
@@ -453,7 +468,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 */
 	private void updateAffectedEnemies(TMXTile current, boolean inMiddleOfWave) {
 		Enemy[] enemies = currentWave.getEnemies();		
-		for (Enemy enemy:enemies) {
+/*		for (Enemy enemy:enemies) {
 			if (!enemy.isDead()) {
 				Path path = aStarHelper.getPath(enemy);
 				if (path == null) {
@@ -468,7 +483,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 					return;
 				}
 			}
-		}
+		}*/
 		
 		
 		outer:
@@ -545,6 +560,24 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			}
 		}
 		return null;
+	}
+	
+	private Tower pointOnExistingTower(float x, float y) {
+		for (int i = 0; i < towers.size(); i++) {
+			Tower t = towers.get(i);
+			if (t.contains(x, y)) return t;
+		}
+		return null;
+	}
+	
+	private void detachHighlightTile() {
+		activity.runOnUpdateThread(new Runnable() {
+
+			@Override
+			public void run() {
+				highlightTile.detachSelf();
+				highlightTile = null;
+			}});
 	}
 	
 	//***************************************************
@@ -628,8 +661,17 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
   	} else {
 			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
   	}
+  	
+  	if (pSceneTouchEvent.isActionDown()) {
+  		downCoords.set(x, y);
+  		
+  		SubMenuManager.remove();
+  		this.unregisterTouchArea(SubMenuManager.getDeleteSprite());
+  	}
+  	
+  	
   	Class<? extends Tower> tClass;
-		if (pSceneTouchEvent.isActionMove()) {
+  	if (pSceneTouchEvent.isActionMove()) {
 			
 			tClass = pointOnTile();
 			if (tClass != null && !towerMove) {
@@ -652,7 +694,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 						public void run() {
 							// TODO Auto-generated method stub
 							attachChild(dragTower);
-							attachChild(dragTower.getReticle());
+							attachChild(SubMenuManager.getReticle(dragTower));
 						}
 					});
 					tClass = null;
@@ -719,9 +761,13 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  			activity.runOnUpdateThread(new Runnable() {
 						@Override
 						public void run() {
-							detachChild(dragTower.getReticle());
+							detachChild(SubMenuManager.getReticle(dragTower));
 						}
 	  			});
+	  			
+	  			//need to get it out of the scene so that the next dragtower doesn't have to start with it from where the
+	  			//previous tower was placed
+	  			SubMenuManager.setReticalPosition(-500.0f, -500.0f);
 	  			
 	  			//Nothing is free in this world
 					this.payAmount(dragTower.getCost());
@@ -742,18 +788,16 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  		if (highlightTile != null) {
 	  			detachHighlightTile();
 	  		}
-			} 		
+			} else if (Math.abs(downCoords.x - x) < 15.0f &&
+					       Math.abs(downCoords.y - y) < 15.0f){
+				
+				Tower tower = pointOnExistingTower(x,y);
+				if (tower != null) {
+					this.attachChild(SubMenuManager.display(tower));
+				}
+				
+			}
 		} 	
   	return true;
   }
-	
-	public void detachHighlightTile() {
-		activity.runOnUpdateThread(new Runnable() {
-
-			@Override
-			public void run() {
-				highlightTile.detachSelf();
-				highlightTile = null;
-			}});
-	}
 }

@@ -39,6 +39,11 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	private TextureRegion dartTowerRegion;
 	private TextureRegion dartBulletRegion;
 	
+	//Sub Menu Items
+	private TextureRegion towerSightRegion;
+	private TextureRegion upgradeOptionRegion;
+	private TextureRegion deleteOptionRegion;
+	
 	private TextureRegion startButtonRegion;
 	
 	private Font inGameFont;
@@ -57,7 +62,7 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	@Override
 	protected void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		final BitmapTextureAtlas mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 1000, 1000, TextureOptions.DEFAULT);
+		final BitmapTextureAtlas mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 1200, 1200, TextureOptions.DEFAULT);
 		int w = 0;
 		int h = 0;
 		
@@ -71,8 +76,13 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 		//BULLETS
 		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "dart.png",w+=81,h); //249x71
 		
+		//SUB-MENU ITEMS
+		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "tower_sight.png",w+=250,h); //100x100
+		upgradeOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "up_arrow.png",w+=101,h); //228x221
+		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "red_x.png",w+=229,h); //238x208
+		
 		//MISC
-		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w+=250,h); //169x169
+		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w+=239,h); //169x169
 		mBitmapTextureAtlas.load();	
 		
 		ITexture fontTexture = new BitmapTextureAtlas(this.getTextureManager(),200,200);
@@ -125,6 +135,15 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	}
 	public TextureRegion getDartBulletRegion() {
 		return this.dartBulletRegion;
+	}
+	public TextureRegion getTowerSightRegion() {
+		return this.towerSightRegion;
+	}
+	public TextureRegion getUpgradeOptionRegion() {
+		return this.upgradeOptionRegion;
+	}
+	public TextureRegion getDeleteOptionRegion() {
+		return this.deleteOptionRegion;
 	}
 	public TextureRegion getStartButtonRegion() {
 		return this.startButtonRegion;
