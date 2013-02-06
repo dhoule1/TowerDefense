@@ -5,6 +5,8 @@ import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.region.ITextureRegion;
 
+import android.util.Log;
+
 public class Enemy extends Sprite{
 
 	private int health;
@@ -52,6 +54,7 @@ public class Enemy extends Sprite{
 	}
 	
 	public void hit(int p) {
+		//Log.i("Enemy Lowering Health", "Enemy "+this.index);
 		health-=p;
 	}
 	

@@ -25,6 +25,7 @@ public class TowerTile {
     HashMap<TextureRegion, Class<? extends Tower>> aMap = new HashMap<TextureRegion, Class<? extends Tower>>();
     aMap.put(activity.getTurretTowerRegion(), TurretTower.class);
     aMap.put(activity.getDartTowerRegion(), DartTower.class);
+    aMap.put(activity.getFlameTowerRegion(), FlameTower.class);
     towerMap = aMap;	
 	}
 	

@@ -37,7 +37,11 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	
 	private TextureRegion turretTowerRegion;
 	private TextureRegion dartTowerRegion;
+	private TextureRegion flameTowerRegion;
+	
 	private TextureRegion dartBulletRegion;
+	private TextureRegion flameParticleRegion1;
+	private TextureRegion flameParticleRegion2;
 	
 	//Sub Menu Items
 	private TextureRegion towerSightRegion;
@@ -72,17 +76,21 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 		//TOWERS
 		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "turret.png",w+=15,h); //80x80
 		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "dart_tower.png",w+=81,h); //80x80
+		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "flame_tower.png",w+=81,h); //80x80
 		
 		//BULLETS
 		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "dart.png",w+=81,h); //249x71
+		flameParticleRegion1 = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "particle_fire.png",w+=250,h); //32x32
+		flameParticleRegion2 = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "ember01.png",w+=33,h); //20x20
 		
 		//SUB-MENU ITEMS
-		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "tower_sight.png",w+=250,h); //100x100
+		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "tower_sight.png",w+=21,h); //100x100
 		upgradeOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "up_arrow.png",w+=101,h); //228x221
-		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "red_x.png",w+=229,h); //238x208
+		w = 0;
+		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "red_x.png",w,h+=222); //238x208
 		
 		//MISC
-		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w+=239,h); //169x169
+		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mBitmapTextureAtlas, this, "play_button_cropped.png",w,h+=209); //169x169
 		mBitmapTextureAtlas.load();	
 		
 		ITexture fontTexture = new BitmapTextureAtlas(this.getTextureManager(),200,200);
@@ -133,8 +141,17 @@ public class TowerDefenseActivity extends SimpleBaseGameActivity {
 	public TextureRegion getDartTowerRegion() {
 		return this.dartTowerRegion;
 	}
+	public TextureRegion getFlameTowerRegion() {
+		return this.flameTowerRegion;
+	}
 	public TextureRegion getDartBulletRegion() {
 		return this.dartBulletRegion;
+	}
+	public TextureRegion getFlameParticleRegion1() {
+		return this.flameParticleRegion1;
+	}
+	public TextureRegion getFlameParticleRegion2() {
+		return this.flameParticleRegion2;
 	}
 	public TextureRegion getTowerSightRegion() {
 		return this.towerSightRegion;

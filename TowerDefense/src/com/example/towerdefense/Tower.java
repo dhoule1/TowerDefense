@@ -43,9 +43,21 @@ public class Tower extends Sprite{
 		SubMenuManager.getReticle(this).setPosition(x-this.getWidthScaled()/3,y-this.getWidthScaled()/3);
 	}
 	
-	public void fireBullets(final Enemy e) {
-		
+	public boolean inSights(float x, float y) {
+		return sight.contains(x, y);
 	}
+	public boolean lockedOnInSight() {
+		return inSights(lockedOn.getXReal(), lockedOn.getYReal());
+	}
+	public void fireBullets(final Enemy e) {}
+	public void onImpact(){}
+	public void onIdleInWave(){}
+	public void onWaveEnd(){this.lockedOn = null;}
+	
+	public void hitEnemy(Enemy e) {
+		e.hit(power);
+	}
+	
 	
 	public Rectangle getSight() {
 		return sight;
@@ -72,11 +84,11 @@ public class Tower extends Sprite{
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 					if (hasBullets) fireBullets(e);
 					else {
-						e.hit(power);
+						hitEnemy(e);
 						checkForDeadEnemies(e);
 					}
 					
-					Log.i("Shooting", "Pew, pew at "+e.getIndex());
+					//Log.i("Shooting", "Pew, pew at "+e.getIndex());
 				}
 	
 				@Override
@@ -89,7 +101,7 @@ public class Tower extends Sprite{
 	public void checkForDeadEnemies(Enemy e) {
 		if (e.isDead() && e.getUserData()!="dead") {
 			GameScene scene = GameScene.getSharedInstance();
-			Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
+			//Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
 			scene.addAmount(e.getWorth());
 			e.destroy();
 			scene.incrementDeadCount();
