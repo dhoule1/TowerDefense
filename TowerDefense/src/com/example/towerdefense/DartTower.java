@@ -20,7 +20,7 @@ public class DartTower extends Tower{
 
 	public DartTower(float pX, float pY,TextureRegion pTextureRegion) {
 		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, pTextureRegion);
-		bulletPool = new DartBulletPool(TowerDefenseActivity.getSharedInstance().getDartBulletRegion());
+		bulletPool = new DartBulletPool(ResourceManager.getInstance().getDartBulletRegion());
 	}
 	
 	@Override

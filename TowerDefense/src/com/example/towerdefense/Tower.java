@@ -50,7 +50,7 @@ public class Tower extends Sprite{
 		return inSights(lockedOn.getXReal(), lockedOn.getYReal());
 	}
 	public void fireBullets(final Enemy e) {}
-	public void onImpact(){}
+	public void onImpact(Enemy enemy){}
 	public void onIdleInWave(){}
 	public void onWaveEnd(){this.lockedOn = null;}
 	
@@ -99,13 +99,15 @@ public class Tower extends Sprite{
 			modifier.setAutoUnregisterWhenFinished(true);
 	}
 	public void checkForDeadEnemies(Enemy e) {
-		if (e.isDead() && e.getUserData()!="dead") {
-			GameScene scene = GameScene.getSharedInstance();
-			//Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
-			scene.addAmount(e.getWorth());
-			e.destroy();
-			scene.incrementDeadCount();
-			scene.seeIffWaveFinished();
+		synchronized(LOCK) {
+			if (e.isDead() && e.getUserData()!="dead") {
+				GameScene scene = GameScene.getSharedInstance();
+				Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
+				scene.addAmount(e.getWorth());
+				e.destroy();
+				scene.incrementDeadCount();
+				scene.seeIfWaveFinished();
+			}
 		}
 	}
 }

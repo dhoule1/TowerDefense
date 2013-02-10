@@ -36,36 +36,36 @@ public class BottomPanel extends HUD{
 
 		camera.setHUD(this);
 		
-		TowerDefenseActivity activity = TowerDefenseActivity.getSharedInstance();
+		ResourceManager resourceManager = ResourceManager.getInstance();
 		GameScene scene = GameScene.getSharedInstance();
 		
-		Font font = activity.getInGameFont();
+		Font font = resourceManager.getFont();
 		
-		moneyText = activity.getString(R.string.money_text);
+		moneyText = resourceManager.getActivity().getString(R.string.money_text);
 		money = new Text(0, 0, font, "Money: $1234567890",
-				activity.getVertexBufferObjectManager());
+				resourceManager.getVbom());
 		money.setText(moneyText.concat(scene.getMoney()+""));
 		money.setScale(0.7f);
 		money.setPosition(mCamera.getBoundsWidth()/2 + money.getWidthScaled(), mCamera.getBoundsHeight()*3/4 - money.getHeightScaled()*1.3f);
 		this.attachChild(money);
 		
-		waveText = activity.getString(R.string.wave_text);
-		wave = new Text(0, 0, font, "Wave: 123",
-				activity.getVertexBufferObjectManager());
-		wave.setText(waveText+" "+scene.getWaveCount());
-		wave.setScale(0.7f);
-		wave.setPosition(money);
-		wave.setY(money.getY() + wave.getHeightScaled());
-		this.attachChild(wave);
-		
-		lifeText = activity.getString(R.string.life_text);
+		lifeText = resourceManager.getActivity().getString(R.string.life_text);
 		life = new Text(0, 0, font, "Lives: 123",
-				activity.getVertexBufferObjectManager());
+				resourceManager.getVbom());
 		life.setText(lifeText+" "+scene.getLives());
 		life.setScale(0.7f);
 		life.setPosition(mCamera.getBoundsWidth()*2/3 + life.getWidthScaled(), -1* mCamera.getBoundsHeight() + life.getHeightScaled()*3);
-		life.setColor(Color.BLACK);
+		life.setColor(Color.WHITE);
 		this.attachChild(life);
+		
+		waveText = resourceManager.getActivity().getString(R.string.wave_text);
+		wave = new Text(0, 0, font, "Wave: 123",
+				resourceManager.getVbom());
+		wave.setText(waveText+" "+scene.getWaveCount());
+		wave.setScale(0.7f);
+		wave.setPosition(life);
+		wave.setX(this.getX()+mCamera.getBoundsWidth()/3 + wave.getWidthScaled()/2);
+		this.attachChild(wave);
 		
 	}
 	

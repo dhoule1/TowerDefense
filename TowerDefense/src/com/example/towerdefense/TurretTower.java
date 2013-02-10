@@ -4,7 +4,7 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 
 public class TurretTower extends Tower{
 	
-	private static final float SCOPE = 60.0f;
+	public static final float SCOPE = 60.0f;
 	private static final float TIME_BETWEEN_SHOTS = 1.0f;
 	private static final int POWER = 1;
 	public static final Integer COST = 2;

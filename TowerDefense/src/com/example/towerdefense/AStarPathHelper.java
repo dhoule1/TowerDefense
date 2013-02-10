@@ -88,12 +88,15 @@ public class AStarPathHelper {
 	 * @return
 	 */
 	public boolean moveEntity(final Enemy enemy) {		
+		if (enemy == null) return true;
 		if (enemy.getUserData() == "dead") return true;
+		
+		Log.i("Speed", ""+enemy.getSpeed());
 		
 		Path path = enemy.getPath();			
 		
 		if (path == null) {
-			scene.removeCurrentTower();
+			scene.removeCurrentTower(true);
 			path = getPath(enemy);
 		}
 		final Path pPath = path;
@@ -142,8 +145,8 @@ public class AStarPathHelper {
 							enemy.destroy();
 							currentlyFinished++;
 							
-							scene.loseALife();
-							scene.seeIffWaveFinished();
+							scene.loseALife(enemy.getEnemyCount());
+							scene.seeIfWaveFinished();
 						}
 						else {
 							mHasFinishedPath = false;
@@ -174,6 +177,7 @@ public class AStarPathHelper {
 				});
 		moveModifier.setAutoUnregisterWhenFinished(true);
 		enemy.registerEntityModifier(moveModifier);
+		enemy.returnSpeedToNormal();
 
 		return mHasFinishedPath;
 	}

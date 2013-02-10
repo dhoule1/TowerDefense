@@ -21,11 +21,11 @@ public class TowerTile {
 	private boolean isTouched;	
 	
 	public static void initializeMap() {
-		TowerDefenseActivity activity = TowerDefenseActivity.getSharedInstance();
+		ResourceManager resourceManager = ResourceManager.getInstance();
     HashMap<TextureRegion, Class<? extends Tower>> aMap = new HashMap<TextureRegion, Class<? extends Tower>>();
-    aMap.put(activity.getTurretTowerRegion(), TurretTower.class);
-    aMap.put(activity.getDartTowerRegion(), DartTower.class);
-    aMap.put(activity.getFlameTowerRegion(), FlameTower.class);
+    aMap.put(resourceManager.getTurretTowerRegion(), TurretTower.class);
+    aMap.put(resourceManager.getDartTowerRegion(), DartTower.class);
+    aMap.put(resourceManager.getFlameTowerRegion(), FlameTower.class);
     towerMap = aMap;	
 	}
 	

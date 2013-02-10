@@ -1,6 +1,8 @@
 package com.example.towerdefense;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
@@ -38,13 +40,16 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		startTile = scene.getStartTile();
 		aStarHelper = scene.getAStarHelper(); 
 		
-		//this.put(0, new Wave(createEnemyArray(FlameEnemy.class, 3)));
+		//this.put(0, new Wave(createEnemyArray(SoldierEnemy.class, 1)));
 		//this.put(1, new Wave(createEnemyArray(FlameEnemy.class, 5)));
 		//this.put(2, new Wave(createEnemyArray(FlameEnemy.class, 7)));
 		//this.put(3, new Wave(createEnemyArray(FlameEnemy.class, 9)));
 		
 		for (int i = 0; i < 100; i++) {
-			this.put(i, new Wave(createEnemyArray(FlameEnemy.class, (i+1) *2)));
+			Class<? extends Enemy> c = (i < 20) ? GruntEnemy.class : SoldierEnemy.class;
+			Wave w = new Wave(createEnemyArray(c, (i+1)));
+			w.setTimeBetweenEnemies(0.5f - (float)i/100);
+			this.put(i, w);
 		}
 	}
 	
@@ -62,14 +67,13 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		wave = this.get(count);
 		Path path = null;
 		
-		for (int i = 0; i < wave.getEnemies().length; i++) {
+		for (int i = 0; i < wave.getEnemies().size(); i++) {
 			Path beginningPath = new Path(2);
-			final Enemy enemy = wave.getEnemies()[i];
+			final Enemy enemy = wave.getEnemies().get(i);
 			enemy.setPosition(-GameScene.getTileWidth()+(GameScene.getTileWidth()/4), startTile.getTileRow()*GameScene.getTileHeight());
 			
 			beginningPath.to(enemy.getX(), enemy.getY())
 				.to((startTile.getTileColumn()*GameScene.getTileWidth()+(GameScene.getTileWidth()/4)), enemy.getY());
-			//PathModifier moveModifier = new PathModifier(enemy.getSpeed(), beginningPath, new PathModifier.IPathModifierListener() {
 			
 			MoveXModifier moveModifier;
 			moveModifier = new MoveXModifier(enemy.getSpeed(), 
@@ -102,6 +106,10 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			
 	}
 	
+	public TimerHandler getTimeHandler() {
+		return this.timer;
+	}
+	
 	/**
 	 * This method just attaches each enemy to its move modifier and attaches it
 	 * to the scene
@@ -109,7 +117,7 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	public void startWave() {
 		aStarHelper.startWave();
 		
-		scene.registerUpdateHandler(timer = new TimerHandler(0.5f, true, new ITimerCallback() {
+		scene.registerUpdateHandler(timer = new TimerHandler(wave.getTimeBetweenEnemies(), true, new ITimerCallback() {
 
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -126,9 +134,10 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	 * gets called with the update handler
 	 */
 	private void initializeEnemy() {
+		Log.i("Init enemy", "init enemy");
 		int count = 0;
 		for (Enemy enemy:wave.getEnemies()) {
-			if (enemy.getUserData() == null) {
+			if (enemy.getUserData() == null && !enemy.hasParent()) {
 				enemy.setUserData("Started");
 				scene.attachChild(enemy);
 				enemy.registerEntityModifier(enemy.getBeginningModifier());
@@ -148,19 +157,23 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	 * @param int num
 	 * @return Enemy[]
 	 */
-	private Enemy[] createEnemyArray(Class<? extends Enemy> E, int num) {
+	private List<Enemy> createEnemyArray(Class<? extends Enemy> E, int num) {
 		
 		TextureRegion texture;
-		Enemy[] array = null;
+		List<Enemy> enemies = new ArrayList<Enemy>();
 		
-		if (E == FlameEnemy.class) {
-			texture = TowerDefenseActivity.getSharedInstance().getFlameEnemyTextureRegion();	
-			array = new FlameEnemy[num];
+		if (E == GruntEnemy.class) {
+			texture = ResourceManager.getInstance().getRedFlameEnemyRegion();	
 			for (int i = 0; i < num; i++) {
-				array[i] = new FlameEnemy(texture);
+				enemies.add(new GruntEnemy(texture));
 			}
 		}
-		return array;
+		else if (E== SoldierEnemy.class) {
+			texture = ResourceManager.getInstance().getBlueFlameEnemyRegion();
+			for (int i = 0; i < num; i++) {
+				enemies.add(new SoldierEnemy(texture));
+			}
+		}
+		return enemies;
 	}
-
 }

@@ -32,9 +32,11 @@ import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 import org.andengine.util.math.MathUtils;
 
+import com.example.towerdefense.SceneManager.SceneType;
+
 import android.util.Log;
 
-public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener{
+public class GameScene extends BaseScene implements IOnSceneTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener{
 	
 	//static fields referring to specific tiles on the map
 	private static final int TILE_WIDTH = 40;
@@ -44,6 +46,8 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	
 	//Reference of Activity context
 	private TowerDefenseActivity activity;
+	
+	private ResourceManager resourceManager;
 	
 	//Makes this a singleton class (only one instance at a time)
 	private static GameScene scene;
@@ -124,6 +128,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		this.mScrollDetector = new SurfaceScrollDetector(this);
 		
 		activity = TowerDefenseActivity.getSharedInstance();
+		resourceManager = ResourceManager.getInstance();
 		scene = this;
 		
 		if (MultiTouch.isSupported(activity)) {
@@ -144,8 +149,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		} catch (final TMXLoadException e) {
 			Debug.e(e);
 		}
-		
+
 		tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);	
+		tmxLayer.setIgnoreUpdate(true);
 		this.attachChild(tmxLayer);
 		
 		mCamera = activity.getCamera();
@@ -185,7 +191,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			}
 		}
 		
-		money = 100;
+		money = 10;
 		lives = 20;
 		
 	  //Initializes the HUD
@@ -193,17 +199,17 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		this.attachChild(panel);
 		
 		TowerTile.initializeMap();
-		turretTile = new TowerTile(activity.getTurretTowerRegion());
+		turretTile = new TowerTile(resourceManager.getTurretTowerRegion());
 		panel.placeTowerAccess(turretTile, 1);
 		
-		dartTile = new TowerTile(activity.getDartTowerRegion());
+		dartTile = new TowerTile(resourceManager.getDartTowerRegion());
 		panel.placeTowerAccess(dartTile, 2);
 		
-		flameTile = new TowerTile(activity.getFlameTowerRegion());
+		flameTile = new TowerTile(resourceManager.getFlameTowerRegion());
 		panel.placeTowerAccess(flameTile, 3);
 		
 		startButton = new Sprite(0.0f,
-				0.0f, activity.getStartButtonRegion(), activity.getVertexBufferObjectManager()) {
+				0.0f, resourceManager.getStartButtonRegion(), activity.getVertexBufferObjectManager()) {
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				startCurrentWave();
@@ -215,9 +221,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		panel.placeStartButton(startButton);
 		
 	  //Getting texture regions for submenu items
-		SubMenuManager.getDeleteRegion(activity.getDeleteOptionRegion());
-		SubMenuManager.getUpgradeRegion(activity.getUpgradeOptionRegion());
-		SubMenuManager.getReticalRegion(activity.getTowerSightRegion());
+		SubMenuManager.getDeleteRegion(resourceManager.getDeleteOptionRegion());
+		SubMenuManager.getUpgradeRegion(resourceManager.getUpgradeOptionRegion());
+		SubMenuManager.getReticalRegion(resourceManager.getTowerSightRegion());
 		
 		//Initializing tower array
 		towers = new ArrayList<Tower>();
@@ -238,10 +244,10 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		//Sets up paths/move modifiers of enemies in the first wave
 		initializeNextWave();
 		
-		FlameTower.initialize(activity.getFlameParticleRegion1());
+		FlameTower.initialize(resourceManager.getFlameParticleRegion());
 		
 		Log.i("Info", "Dead Enemies: "+deadEnemies + " Finished Enemies: "+ aStarHelper.getNumberOfEnemiesFinished() +
-				" Current Wave Length: "+currentWave.getEnemies().length);
+				" Current Wave Length: "+currentWave.getEnemies().size());
 		
 		collisionDetect = new RunnableHandler() {
 			@Override
@@ -250,8 +256,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			}
 		};
 		
-		this.registerUpdateHandler(collisionDetect);
-		
+		this.registerUpdateHandler(collisionDetect);		
 		
 	}
 	//**********************************************************
@@ -304,10 +309,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		return this.waveCount;
 	}	
 	public void incrementDeadCount() {
-		synchronized(Tower.LOCK) {
 			this.deadEnemies++;
-			Tower.LOCK.notifyAll();
-		}
 	}
 	public Integer getMoney() {
 		return money;
@@ -325,8 +327,8 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			this.panel.setMoneyText(money);
 		}
 	}
-	public void loseALife() {
-		lives--;
+	public void loseALife(int i) {
+		lives-=i;
 		this.panel.setLifeText(lives);
 	}
 	public Integer getLives() {
@@ -336,7 +338,14 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	/**
 	 * Initializes paths and move modifiers of all enemies in the next wave
 	 */
-	public void initializeNextWave() {		
+	public void initializeNextWave() {	
+		
+		Log.i("Init wave", "here");
+		
+		//If the previous wave was eliminated even before all enemies technically started, the time handler
+		//that handles their first move modifier would never get unregistered, putting the game in limbo
+		this.unregisterUpdateHandler(waveGenerator.getTimeHandler());
+		
 		waveGenerator.initWave(waveCount);
 		currentWave = waveGenerator.get(waveCount);
 		waveCount++;
@@ -349,6 +358,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		 * Just for debugging
 		 */
 		for (Enemy enemy:currentWave.getEnemies()) {
+			if (enemy == null) continue;
 			enemy.setUserData(null);
 			enemy.returnHealthToNormal();
 		}
@@ -360,11 +370,11 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	/**
 	 * Removes the dragtower and the currentTile
 	 */
-	public void removeCurrentTower() {
+	public void removeCurrentTower(boolean removeTile) {
 		try {
 			if (inLegitimatePosition(currentTile)) addAmount(dragTower.getCost());
 		}catch(Exception e){}
-		removeTower(dragTower);
+		removeTower(dragTower, removeTile);
 	}
 	
 	/**
@@ -372,16 +382,23 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * even though there are 2 distinct ways to end a wave.
 	 * If the wave has ended, it calls the method to initialize the next wave.
 	 */
-	public void seeIffWaveFinished() {		
+	public void seeIfWaveFinished() {		
 		if (!initializedNewWave) {
-			if  ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().length)) {
-				Log.i("Dead Enemies", "Dead: "+deadEnemies);
+			Log.i("Dead Enemies", "Dead: "+deadEnemies+", Done: "+aStarHelper.getNumberOfEnemiesFinished()+" = "+currentWave.getEnemies().size());
+			if  ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().size())) {
+				Log.i("In", deadEnemies+" "+aStarHelper.getNumberOfEnemiesFinished()+" "+currentWave.getEnemies().size());
 				initializedNewWave = true;
 				waveFinished = true;
 				initializeNextWave();
 			}
 		}
 	}	
+	
+	public void addNewEnemyToField(Enemy enemy) {
+		aStarHelper.moveEntity(enemy);
+		this.attachChild(enemy);
+		this.currentWave.getEnemies().add(enemy);
+	}
 	
 	
 	//PRIVATE METHODS
@@ -394,8 +411,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			Log.i("START WAVE", "START WAVE");
 			waveFinished = false;
 			initializedNewWave = false;
-			waveGenerator.startWave();		
-	
+			waveGenerator.startWave();
 		}
 	}
 	
@@ -414,13 +430,9 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * Removes a tower from the field
 	 * @param Tower t
 	 */
-	public void removeTower(final Tower t) {
-		Log.i("Delete Before", "Deleting Tower "+blockedTileList.size());
-		//try {
-			TMXTile tile = tmxLayer.getTMXTileAt(t.getX() + TILE_WIDTH/2, t.getY() + TILE_WIDTH/2);
-			if (blockedTileList.contains(tile)) blockedTileList.remove(tile);
-		//}catch(Exception e){Log.i("ERROR", e.getMessage());}
-		Log.i("Delete After", "Deleting Tower "+blockedTileList.size());
+	public void removeTower(final Tower t, boolean removeTile) {
+	  TMXTile tile = tmxLayer.getTMXTileAt(t.getX() + TILE_WIDTH/2, t.getY() + TILE_WIDTH/2);
+		if (blockedTileList.contains(tile) && removeTile) blockedTileList.remove(tile);
 		activity.runOnUpdateThread(new Runnable() {
 
 			@Override
@@ -455,20 +467,27 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	private void collisionDetect() {
 		if (!waveFinished) {
 			
+			float dx;
+			float dy;
+			float angle;
+			float realAngle;
+			
 			for (Tower t:towers) {
 				for (Enemy enemy:currentWave.getEnemies()) {
+					if (enemy == null) continue;
 					if (enemy.getUserData() == "dead") continue;
+					t.onImpact(enemy);
 					if (stillInRange(t)) {
 						enemy = t.getLockedOn();
 					}
 
 					if(t.inSights(enemy.getXReal(), enemy.getYReal())) {
-						t.onImpact();
 						t.setLockedOn(enemy);
-						float dx = t.getX()-(enemy.getX()-enemy.getWidthScaled());
-						float dy = t.getY()-(enemy.getY()-enemy.getHeightScaled()/2);
-						float angle = MathUtils.atan2(dy,dx);
-						t.setRotation((float)(angle * (180.0f/Math.PI)));
+						dx = t.getX()-(enemy.getX()-enemy.getWidthScaled());
+						dy = t.getY()-(enemy.getY()-enemy.getHeightScaled()/2);
+						angle = MathUtils.atan2(dy,dx);
+						realAngle = (float)(angle * (180.0f/Math.PI));
+						t.setRotation(realAngle);
 						t.shoot(enemy);
 					} else {
 						t.onIdleInWave();
@@ -496,19 +515,21 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	 * @param inMiddleOfWave
 	 */
 	private void updateAffectedEnemies(TMXTile current, boolean inMiddleOfWave) {
-		Enemy[] enemies = currentWave.getEnemies();				
+		List<Enemy> enemies = currentWave.getEnemies();			
+		float pX;
+		float pY;
 		outer:
 		for (Enemy enemy:enemies) {
+			if (enemy == null) continue;
 			Path p = enemy.getPath();
 			for(int i = 0; i < p.getCoordinatesX().length; i++) {
-				float pX = p.getCoordinatesX()[i];
-				float pY = p.getCoordinatesY()[i];
+				pX = p.getCoordinatesX()[i];
+				pY = p.getCoordinatesY()[i];
 				
 				TMXTile tile = this.tmxLayer.getTMXTileAt(pX, pY);
 				if (current.equals(tile)) {
 					updateEnemyPaths(inMiddleOfWave, enemy);
-					if(inMiddleOfWave) break;
-					break outer;
+					if(!inMiddleOfWave) break outer;
 				}
 			}
 		}
@@ -524,12 +545,13 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 			Log.i("Updating path", "Updating path");
 			enemy.setNeedToUpdatePath(true);
 		}else {
-			Path p = aStarHelper.getPath(currentWave.getEnemies()[0]);
+			Path p = aStarHelper.getPath(currentWave.getEnemies().get(0));
 			if (p == null) {
-				removeCurrentTower();
-				p = aStarHelper.getPath(currentWave.getEnemies()[0]);
+				removeCurrentTower(true);
+				p = aStarHelper.getPath(currentWave.getEnemies().get(0));
 			}
 			for (Enemy e:currentWave.getEnemies()) {
+				if (e == null) continue;
 				e.setPath(p.deepCopy());
 			}
 		}
@@ -676,6 +698,7 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
   	if (pSceneTouchEvent.isActionDown()) {
   		downCoords.set(x, y);
   		
+  		SubMenuManager.setReticalPosition(-500.0f, -500.0f);
   		SubMenuManager.remove();
   		this.unregisterTouchArea(SubMenuManager.getDeleteSprite());
   	}
@@ -689,13 +712,13 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 				dragTower = null;
 				towerMove = true;
 				if (tClass.equals(TurretTower.class) && canAfford(TurretTower.COST)) {
-					dragTower = new TurretTower(x,y, activity.getTurretTowerRegion());
+					dragTower = new TurretTower(x,y, resourceManager.getTurretTowerRegion());
 				}
 				else if (tClass.equals(DartTower.class) && canAfford(DartTower.COST)) {
-					dragTower = new DartTower(x,y, activity.getDartTowerRegion());
+					dragTower = new DartTower(x,y, resourceManager.getDartTowerRegion());
 				}
 				else if (tClass.equals(FlameTower.class) && canAfford(FlameTower.COST)) {
-					dragTower = new FlameTower(x,y,activity.getFlameTowerRegion());
+					dragTower = new FlameTower(x,y,resourceManager.getFlameTowerRegion());
 				}
 				else towerMove = false;
 				
@@ -706,7 +729,6 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 					activity.runOnUpdateThread(new Runnable() {
 						@Override
 						public void run() {
-							// TODO Auto-generated method stub
 							attachChild(dragTower);
 							attachChild(SubMenuManager.getReticle(dragTower));
 						}
@@ -797,7 +819,8 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 	  		}
 	  		
 	  		else {
-	  			removeCurrentTower();
+	  			Log.i("Removing Tower", "Removing");
+	  			removeCurrentTower(false);
 	  		}
 	  		
 	  		if (highlightTile != null) {
@@ -815,4 +838,25 @@ public class GameScene extends Scene implements IOnSceneTouchListener, IScrollDe
 		} 	
   	return true;
   }
+
+	@Override
+	public void createScene() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onBackKeyPressed() {
+		SceneManager.getInstance().loadMenuScene(engine);
+	}
+
+	@Override
+	public SceneType getSceneType() {
+		return SceneType.SCENE_GAME;
+	}
+
+	@Override
+	public void disposeScene() {		
+		camera.setHUD(null);
+	}
 }
