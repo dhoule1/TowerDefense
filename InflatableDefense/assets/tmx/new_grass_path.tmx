@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="20" height="10" tilewidth="40" tileheight="40">
+ <properties>
+  <property name="start" value="true"/>
+ </properties>
+ <tileset firstgid="1" name="light_dark_combo_grass2" tilewidth="40" tileheight="40" spacing="3" margin="2">
+  <image source="gfx/light_dark_combo_grass2_.png" width="92" height="45"/>
+ </tileset>
+ <layer name="Tile Layer 3" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjZGBgYAJiRirR1DSLkcpmjbpv1H2k0gDaRwEt
+  </data>
+ </layer>
+</map>
