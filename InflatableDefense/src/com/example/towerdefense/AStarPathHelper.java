@@ -79,7 +79,7 @@ public class AStarPathHelper {
 		mWayPointIndex = 0;
 
 		// Only loads the path if the AStarPath is not null
-			return loadPathFound();
+			return loadPathFound(enemy.getOffsetX(), enemy.getOffsetY());
 	}
 
 	/**
@@ -186,13 +186,14 @@ public class AStarPathHelper {
 	
 	//*************************Private Methods**************************************//
 	
-	private Path loadPathFound() {
+	private Path loadPathFound(float offX, float offY) {
 		if (aStarPath == null)
 			return null;
 		Path current = new Path(aStarPath.getLength());
+		
 		for (int i = 0; i < aStarPath.getLength(); i++) {
-			current.to( aStarPath.getX(i) * GameScene.getTileWidth()- GameScene.getTileWidth() / 4,
-					aStarPath.getY(i) * GameScene.getTileHeight() - GameScene.getTileHeight()/4);
+			current.to( aStarPath.getX(i) * GameScene.getTileWidth() + offX,
+					aStarPath.getY(i) * GameScene.getTileHeight() + offY);
 		}
 		return current;
 	}

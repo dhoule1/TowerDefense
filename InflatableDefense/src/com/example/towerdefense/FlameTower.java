@@ -1,8 +1,5 @@
 package com.example.towerdefense;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.andengine.entity.Entity;
 import org.andengine.entity.particle.SpriteParticleSystem;
 import org.andengine.entity.particle.emitter.PointParticleEmitter;
@@ -18,7 +15,7 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.color.Color;
 
-public class FlameTower extends BaseTower{
+public class FlameTower extends BaseTower implements ICollectionTower{
 	
 	private static final float SCOPE = 60.0f;
 	private static final float TIME_BETWEEN_SHOTS = 0.5f;
@@ -37,8 +34,6 @@ public class FlameTower extends BaseTower{
 	private boolean particlesAttached;
 	
 	private Rectangle psSight;
-	
-	private List<Enemy> queue;
 	
 	public static void initialize(TextureRegion region) {
 		flameRegion1 = region;
@@ -91,8 +86,6 @@ public class FlameTower extends BaseTower{
 		entity.setY(entity.getY()+this.getHeightScaled()/3);
 		
 		particlesAttached = false;
-		
-		queue = new ArrayList<Enemy>();
 	}
 	
 	private void disableParticleSystem() {
@@ -116,6 +109,20 @@ public class FlameTower extends BaseTower{
 		particlesAttached = visible;
 	}
 	
+	public SpriteParticleSystem getFireParticleSystem() {
+		return pSystem1;
+	}
+	
+	public void detachFireParticleSystem() {
+		TowerDefenseActivity.getSharedInstance().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				entity.detachSelf();
+				entity.dispose();
+			}
+		});
+	}
+	
 	@Override
 	public boolean inSights(float x, float y) {
 		boolean a = super.getSight().contains(x, y);
@@ -132,7 +139,9 @@ public class FlameTower extends BaseTower{
 	
 	@Override
 	public void onImpact(Enemy enemy) {
-		if (!queue.contains(enemy)) queue.add(enemy);
+		this.setZIndex(2);
+		GameScene.getSharedInstance().sortChildren();
+		addToQueue(enemy);
 		
 		if (particlesAttached) return;
 		enableParicleSystem();
@@ -140,13 +149,13 @@ public class FlameTower extends BaseTower{
 	@Override
 	public void onIdleInWave() {
 		disableParticleSystem();
-		queue.clear();
+		clearQueue();
 	}
 	@Override
 	public void onWaveEnd() {
 		super.onWaveEnd();
 		disableParticleSystem();
-		queue.clear();
+		clearQueue();
 	}
 	
 	@Override
@@ -163,18 +172,12 @@ public class FlameTower extends BaseTower{
 			}
 		}
 	}
-
-	public SpriteParticleSystem getFireParticleSystem() {
-		return pSystem1;
+	@Override
+	public void addToQueue(Enemy e) {
+		if (!queue.contains(e)) queue.add(e);
 	}
-	
-	public void detachFireParticleSystem() {
-		TowerDefenseActivity.getSharedInstance().runOnUpdateThread(new Runnable() {
-			@Override
-			public void run() {
-				entity.detachSelf();
-				entity.dispose();
-			}
-		});
+	@Override
+	public void clearQueue() {
+		queue.clear();
 	}
 }

@@ -33,15 +33,19 @@ public class MainMenuScene extends BaseScene implements IOnMenuItemClickListener
 	}
 	
 	public void createBackground() {
-		attachChild(new Sprite(0,-20, resourceManager.getMenu_background_region(), vbom)
-    {
-        @Override
-        protected void preDraw(GLState pGLState, Camera pCamera) 
-        {
-            super.preDraw(pGLState, pCamera);
-            pGLState.enableDither();
-        }
-    });
+		Sprite background = new Sprite(0,-20, resourceManager.getMenuBackgroundRegion(), vbom){
+      @Override
+      protected void preDraw(GLState pGLState, Camera pCamera) 
+      {
+          super.preDraw(pGLState, pCamera);
+          pGLState.enableDither();
+      }
+  };
+		Sprite text = new Sprite(0.0f,0.0f,resourceManager.getMenuTextRegion(), vbom);
+		text.setPosition(background.getWidth()/2 - text.getWidth()/2,
+				background.getHeight()/6);
+		background.attachChild(text);
+		attachChild(background);
 	}
 
 	@Override
@@ -73,7 +77,7 @@ public class MainMenuScene extends BaseScene implements IOnMenuItemClickListener
 			float pMenuItemLocalX, float pMenuItemLocalY) {
     switch(pMenuItem.getID()) {
     case MENU_PLAY:
-    	SceneManager.getInstance().loadGameScene(engine);
+    	SceneManager.getInstance().createLevelChooserScene();
         return true;
     default:
         return false;

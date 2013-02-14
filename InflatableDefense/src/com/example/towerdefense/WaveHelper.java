@@ -79,13 +79,8 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		Path path = null;
 		
 		for (int i = 0; i < wave.getEnemies().size(); i++) {
-			//Path beginningPath = new Path(2);
 			final Enemy enemy = wave.getEnemies().get(i);
 			enemy.setPosition(-GameScene.getTileWidth()-(GameScene.getTileWidth()/4), startTile.getTileRow()*GameScene.getTileHeight() - GameScene.getTileHeight()/4);
-			
-			//beginningPath.to(enemy.getX(), enemy.getY())
-				//.to((startTile.getTileColumn()*GameScene.getTileWidth()-(GameScene.getTileWidth()*11/12)), enemy.getY());
-			Log.i("Ending x", (startTile.getTileColumn()*GameScene.getTileWidth()-((GameScene.getTileWidth()*11)/12))+"");
 			
 			MoveXModifier moveModifier;
 			moveModifier = new MoveXModifier(enemy.getSpeed(), 
@@ -106,11 +101,17 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			});
 			moveModifier.setAutoUnregisterWhenFinished(true);
 			enemy.setBeginningModifier(moveModifier);
-			
-			while (path == null) {
+			Enemy e = null;
+			if (path == null) {
+				e = new Enemy();
+				e.setUserData("dummy");
 				Log.i("Setting Path", "Now");
-				path = aStarHelper.getPath(null);
+				path = aStarHelper.getPath(e);
 				wave.setFullPath(path);
+			}
+			if (wave.getFullPath() == null) {
+			  scene.removeCurrentTower(true);
+				wave.setFullPath(aStarHelper.getPath(e));
 			}
 			enemy.setPath(wave.getFullPath().deepCopy());
 			enemy.setIndex(i);

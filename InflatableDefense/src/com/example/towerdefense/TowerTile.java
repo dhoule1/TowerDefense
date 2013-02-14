@@ -8,7 +8,6 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXTiledMap;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.BaseTextureRegion;
-import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.color.Color;
 
@@ -27,6 +26,7 @@ public class TowerTile {
     aMap.put(resourceManager.getTurretTowerRegion(), TurretTower.class);
     aMap.put(resourceManager.getDartTowerRegion(), DartTower.class);
     aMap.put(resourceManager.getFlameTowerRegion(), FlameTower.class);
+    aMap.put(resourceManager.getIceTowerRegion(), IceTower.class);
     towerMap = aMap;	
 	}
 	

@@ -31,6 +31,7 @@ public class TurretTower extends AnimatedSprite implements ITower{
 		sight.setPosition(this.getX() - sight.getWidthScaled()*10, this.getY());
 		
 		entity = this;
+		entity.setZIndex(1);
 	}
 
 	@Override

@@ -77,7 +77,7 @@ public class MyAStarPathFinder {
 		
 		long start = System.currentTimeMillis();
 		
-		TMXTile tile = (enemy == null) ? startTile : layer.getTMXTileAt(enemy.getX()+GameScene.getTileWidth(), enemy.getY()+GameScene.getTileHeight());
+		TMXTile tile = (enemy.getUserData() == "dummy") ? startTile : layer.getTMXTileAt(enemy.getXReal(), enemy.getYReal());
 		
 		int fromX = tile.getTileColumn();
 		int fromY = tile.getTileRow();

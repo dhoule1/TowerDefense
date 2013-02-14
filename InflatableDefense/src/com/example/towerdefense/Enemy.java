@@ -19,6 +19,8 @@ public class Enemy extends AnimatedSprite{
 	private boolean needToUpdatePath;
 	private int index;
 	private boolean droppedChildren;
+	
+	private boolean isFrozen;
 
 	public Enemy(ITiledTextureRegion pTextureRegion, int childCount, float x, float y, int health, float speed, Integer worth) {
 		super(x, y, pTextureRegion, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
@@ -31,6 +33,11 @@ public class Enemy extends AnimatedSprite{
 		this.path = null;
 		this.needToUpdatePath = false;
 		this.droppedChildren = false;
+		
+		isFrozen = false;
+	}
+	public Enemy() {
+		super(0.0f,0.0f, ResourceManager.getInstance().getBasketballRegion(), ResourceManager.getInstance().getVbom());
 	}
 
 	public float getXReal() {
@@ -150,5 +157,22 @@ public class Enemy extends AnimatedSprite{
 	
 	public int getIndex() {
 		return index;
+	}
+	
+	public float getOffsetX() {
+		return -GameScene.getTileWidth()/4;
+	}
+	public float getOffsetY() {
+		return -GameScene.getTileHeight()/4;
+	}
+	
+	public void freeze() {
+		isFrozen = true;
+	}
+	public void thaw() {
+		isFrozen = false;
+	}
+	public boolean isFrozen() {
+		return isFrozen;
 	}
 }

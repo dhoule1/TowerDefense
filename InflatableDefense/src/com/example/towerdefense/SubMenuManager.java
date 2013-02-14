@@ -30,6 +30,7 @@ public class SubMenuManager {
 		sightOriginalScale = 1.3f;
 		reticle.setScale(sightOriginalScale);
 		reticle.setAlpha(0.5f);
+		reticle.setZIndex(0);
 		scene = GameScene.getSharedInstance();
 	}
 	public static void getUpgradeRegion(TextureRegion region) {

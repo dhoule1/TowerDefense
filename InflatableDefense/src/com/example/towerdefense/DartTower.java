@@ -6,8 +6,6 @@ import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.modifier.IModifier;
 
-import android.util.Log;
-
 public class DartTower extends BaseTower{
 	
 	private static final float SCOPE = 100.0f;
@@ -28,9 +26,9 @@ public class DartTower extends BaseTower{
 		
 		final DartBullet b = bulletPool.obtainPoolItem();
 		b.setPosition((this.getX() + this.getWidthScaled()/2) - (b.getWidthScaled() + this.getWidthScaled()*3/2),
-				(this.getY() + this.getHeightScaled()/2) - (b.getHeightScaled()/2 + this.getHeightScaled()/2));
+				(this.getY() + this.getHeightScaled()/2) - (this.getHeightScaled()/2));
 		b.setRotation(this.getRotation());
-		MoveModifier mmodify = new MoveModifier(DartBullet.SPEED, b.getX(), e.getX() - b.getWidthScaled()*2, b.getY(), e.getYReal() - e.getHeightScaled(),
+		MoveModifier mmodify = new MoveModifier(DartBullet.SPEED, b.getX(), e.getX() - b.getWidthScaled()*2, b.getY(), e.getYReal() - e.getHeightScaled()*2/3,
 				new IEntityModifier.IEntityModifierListener() {
 
 					@Override
@@ -43,7 +41,6 @@ public class DartTower extends BaseTower{
 					public void onModifierFinished(IModifier<IEntity> pModifier,
 							IEntity pItem) {
 						if (!e.isDead()) {
-							Log.i("Shoot", "SHOOT "+e.getIndex());
 							e.hit(POWER);
 							checkForDeadEnemies(e);
 						}
@@ -54,8 +51,6 @@ public class DartTower extends BaseTower{
 		});
 		b.registerEntityModifier(mmodify);
 		mmodify.setAutoUnregisterWhenFinished(true);
-		
-		Log.i("Dart Away", "Firing Dart");
 		
 		GameScene.getSharedInstance().attachChild(b);
 	}

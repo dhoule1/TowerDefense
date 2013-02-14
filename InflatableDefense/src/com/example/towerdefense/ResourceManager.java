@@ -34,10 +34,17 @@ public class ResourceManager {
 	private TextureRegion splashRegion;
 	private BitmapTextureAtlas splashTextureAtlas;
 	
-	private TextureRegion menu_background_region;
+	private TextureRegion menuBackgroundRegion;
+	private TextureRegion menuTextRegion;
 	private TextureRegion play_region;
 	private BuildableBitmapTextureAtlas menuTextureAtlas;
-
+	
+	//private TextureRegion levelBackgroundRegion;
+	private TextureRegion levelTextRegion;
+	private TextureRegion desertImageProfileRegion;
+	private TextureRegion grassImageProfileRegion;
+	private TextureRegion pageBullets;
+	private BuildableBitmapTextureAtlas levelChooserTextureAtlas;
 	
 	private TiledTextureRegion soccerballRegion;
 	private TiledTextureRegion basketballRegion;
@@ -46,9 +53,11 @@ public class ResourceManager {
 	private TiledTextureRegion turretTowerRegion;
 	private TextureRegion dartTowerRegion;
 	private TextureRegion flameTowerRegion;
+	private TextureRegion iceTowerRegion;
 	
 	private TextureRegion dartBulletRegion;
 	private TextureRegion flameParticleRegion;
+	private TextureRegion icicleRegion;
 	
 	//Sub Menu Items
 	private TextureRegion towerSightRegion;
@@ -68,15 +77,18 @@ public class ResourceManager {
 	// CLASS LOGIC
 	//---------------------------------------------
 
-	public void loadMenuResources()
-	{
+	public void loadMenuResources() {
 		loadMenuGraphics();
 		loadMenuAudio();
 		loadMenuFonts();
 	}
+	public void loadLevelChooserResources() {
+		loadLevelChooserGraphics();
+		loadLevelChooserFonts();
+		loadLevelChooserAudio();
+	}
 
-	public void loadGameResources()
-	{
+	public void loadGameResources() {
 		loadGameGraphics();
 		loadGameFonts();
 		loadGameAudio();
@@ -85,7 +97,8 @@ public class ResourceManager {
 	private void loadMenuGraphics() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/menu/");
 		menuTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
-		menu_background_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "menu_background.png");
+		menuBackgroundRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "main_level_background.png");
+		menuTextRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "title_text.png");
 		play_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "start_button.png");
 		       
 		try 
@@ -107,18 +120,33 @@ public class ResourceManager {
     font.load();
 	}
 
-	private void loadMenuAudio()
-	{
-
-	}
+	private void loadMenuAudio() {}
 	
 	public void loadMenuTextures() {
 		menuTextureAtlas.load();
 	}
 	
+	public void loadLevelChooserGraphics() {
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/level/");
+		levelChooserTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1000, 1000, TextureOptions.DEFAULT);
+		levelTextRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "level_select_text.png");
+		desertImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "desert_image.png");
+		grassImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "grass_image.png");
+		pageBullets = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "bullets.png");
+		
+		try {
+			levelChooserTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
+			levelChooserTextureAtlas.load();
+		} catch (TextureAtlasBuilderException e) {
+			e.printStackTrace();
+		}
+	}
+	public void loadLevelChooserFonts(){}
+	public void loadLevelChooserAudio(){}
+	
 
 	private void loadGameGraphics() {
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/game/");
 		gameTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1200, 1200, TextureOptions.DEFAULT);
 		
 		//ENEMIES
@@ -130,10 +158,12 @@ public class ResourceManager {
 		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "turret_tiled.png", 2,1); //80x160
 		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "dart_tower.png"); //80x80
 		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "flame_tower.png"); //80x80
+		iceTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "ice_tower.png"); //80x80
 		
 		//BULLETS
 		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "dart.png"); //249x71
 		flameParticleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "particle_fire.png"); //32x32
+		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "icicle_trans.png");
 		
 		//SUB-MENU ITEMS
 		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "tower_sight.png"); //100x100
@@ -159,7 +189,7 @@ public class ResourceManager {
 	}
 
 	public void loadSplashScreen() {
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/splash/");
 		splashTextureAtlas = new BitmapTextureAtlas(activity.getTextureManager(), 1000, 1000, TextureOptions.BILINEAR);
 		splashRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(splashTextureAtlas, activity, "splash.png", 0, 0);
 		splashTextureAtlas.load();
@@ -171,6 +201,9 @@ public class ResourceManager {
 	}
 	public void unloadMenuTextures() {
 		menuTextureAtlas.unload();
+	}
+	public void unloadLevelChooserTextures() {
+		levelChooserTextureAtlas.unload();
 	}
 	public void unloadGameTextures() {
 		gameTextureAtlas.unload();
@@ -250,14 +283,51 @@ public class ResourceManager {
 		this.splashTextureAtlas = splashTextureAtlas;
 	}
 
-	public TextureRegion getMenu_background_region() {
-		return menu_background_region;
+	public TextureRegion getMenuBackgroundRegion() {
+		return menuBackgroundRegion;
 	}
 
-	public void setMenu_background_region(TextureRegion menu_background_region) {
-		this.menu_background_region = menu_background_region;
-	}
+	public void setMenuBackgroundRegion(TextureRegion menuBackgroundRegion) {
+		this.menuBackgroundRegion = menuBackgroundRegion;
+	}  
 
+	public TextureRegion getMenuTextRegion() {
+		return menuTextRegion;
+	}
+	public void setMenuTextRegion(TextureRegion menuTextRegion) {
+		this.menuTextRegion = menuTextRegion;
+	}
+	public TextureRegion getLevelTextRegion() {
+		return levelTextRegion;
+	}
+	public void setLevelTextRegion(TextureRegion levelTextRegion) {
+		this.levelTextRegion = levelTextRegion;
+	}
+	public TextureRegion getDesertImageProfileRegion() {
+		return desertImageProfileRegion;
+	}
+	public void setDesertImageProfileRegion(TextureRegion desertImageProfileRegion) {
+		this.desertImageProfileRegion = desertImageProfileRegion;
+	}
+	public TextureRegion getGrassImageProfileRegion() {
+		return grassImageProfileRegion;
+	}
+	public void setGrassImageProfileRegion(TextureRegion grassImageProfileRegion) {
+		this.grassImageProfileRegion = grassImageProfileRegion;
+	}
+	public TextureRegion getPageBullets() {
+		return pageBullets;
+	}
+	public void setPageBullets(TextureRegion pageBullets) {
+		this.pageBullets = pageBullets;
+	}
+	public BuildableBitmapTextureAtlas getLevelChooserTextureAtlas() {
+		return levelChooserTextureAtlas;
+	}
+	public void setLevelChooserTextureAtlas(
+			BuildableBitmapTextureAtlas levelChooserTextureAtlas) {
+		this.levelChooserTextureAtlas = levelChooserTextureAtlas;
+	}
 	public TextureRegion getPlay_region() {
 		return play_region;
 	}
@@ -321,6 +391,14 @@ public class ResourceManager {
 	public void setFlameTowerRegion(TextureRegion flameTowerRegion) {
 		this.flameTowerRegion = flameTowerRegion;
 	}
+	
+	public TextureRegion getIceTowerRegion() {
+		return iceTowerRegion;
+	}
+
+	public void setIceTowerRegion(TextureRegion iceTowerRegion) {
+		this.iceTowerRegion = iceTowerRegion;
+	}
 
 	public TextureRegion getDartBulletRegion() {
 		return dartBulletRegion;
@@ -336,6 +414,14 @@ public class ResourceManager {
 
 	public void setFlameParticleRegion(TextureRegion flameParticleRegion) {
 		this.flameParticleRegion = flameParticleRegion;
+	}
+	
+	public TextureRegion getIcicleRegion() {
+		return icicleRegion;
+	}
+
+	public void setIcicleRegion(TextureRegion icicleRegion) {
+		this.icicleRegion = icicleRegion;
 	}
 
 	public TextureRegion getTowerSightRegion() {
@@ -381,7 +467,6 @@ public class ResourceManager {
 	public Font getFont() {
 		return font;
 	}
-
 	public void setFont(Font font) {
 		this.font = font;
 	}
