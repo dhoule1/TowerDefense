@@ -1,5 +1,6 @@
 package com.example.towerdefense;
 
+import org.andengine.audio.sound.Sound;
 import org.andengine.entity.modifier.MoveXModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -7,8 +8,8 @@ import org.andengine.opengl.texture.region.ITiledTextureRegion;
 
 public class Enemy extends AnimatedSprite{
 	
+	public Enemy[] childArray;
 	private int childCount;
-
 	private int health;
 	private int maxHealth;
 	private float speed;
@@ -19,12 +20,14 @@ public class Enemy extends AnimatedSprite{
 	private boolean needToUpdatePath;
 	private int index;
 	private boolean droppedChildren;
+	private Sound pop;
 	
 	private boolean isFrozen;
 
 	public Enemy(ITiledTextureRegion pTextureRegion, int childCount, float x, float y, int health, float speed, Integer worth) {
 		super(x, y, pTextureRegion, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 		this.childCount = childCount;
+		this.childArray = new Enemy[this.childCount];
 		this.health = health;
 		this.maxHealth = health;
 		this.speed = speed;
@@ -33,6 +36,7 @@ public class Enemy extends AnimatedSprite{
 		this.path = null;
 		this.needToUpdatePath = false;
 		this.droppedChildren = false;
+		this.pop = ResourceManager.getInstance().getPopSound();
 		
 		isFrozen = false;
 	}
@@ -50,9 +54,13 @@ public class Enemy extends AnimatedSprite{
 	public int getEnemyCount() {
 		return (droppedChildren) ? 1 : 1 + childCount;
 	}
+	public void setChild(int index, Enemy enemy) {
+		childArray[index] = enemy;
+	}
 	
 	public void destroy() {
 		if (this.isDead()) setCurrentTileIndex(1);
+		this.hit(this.maxHealth);
 		TowerDefenseActivity.getSharedInstance().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {	
@@ -62,7 +70,11 @@ public class Enemy extends AnimatedSprite{
 			}
 		});
 		this.setUserData("dead");
-		if (this.path.getCoordinatesX().length != 2) dropChildren();
+		
+		if (this.path.getCoordinatesX().length != 2) {
+			dropChildren();
+			pop.play();
+		}
 	}
 	
 	/**
@@ -79,14 +91,14 @@ public class Enemy extends AnimatedSprite{
 				double modifier = (i/2 - (double)childCount/2) * -1;
 				if (i == middle) modifier = 1;
 				if (this.getX() < x) {
-					createNewChild(this.getX() + result, this.getY(), modifier);
+					createNewChild(this.getX() + result, this.getY(), modifier, i);
 				} else {
-					createNewChild(this.getX(), this.getY() + result, modifier);
+					createNewChild(this.getX(), this.getY() + result, modifier, i);
 				}
 			}
 		}
 	}
-	public void createNewChild(float x, float y, double speedModifier) {	}
+	public void createNewChild(float x, float y, double speedModifier, int index) {	}
 	
 	public void returnHealthToNormal() {
 		this.health = this.maxHealth;

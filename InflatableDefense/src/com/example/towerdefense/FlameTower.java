@@ -1,5 +1,8 @@
 package com.example.towerdefense;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andengine.entity.Entity;
 import org.andengine.entity.particle.SpriteParticleSystem;
 import org.andengine.entity.particle.emitter.PointParticleEmitter;
@@ -34,6 +37,8 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 	private boolean particlesAttached;
 	
 	private Rectangle psSight;
+	
+	private List<Enemy> queue;
 	
 	public static void initialize(TextureRegion region) {
 		flameRegion1 = region;
@@ -86,6 +91,8 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 		entity.setY(entity.getY()+this.getHeightScaled()/3);
 		
 		particlesAttached = false;
+		
+		queue = new ArrayList<Enemy>();
 	}
 	
 	private void disableParticleSystem() {
@@ -138,7 +145,8 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 	}
 	
 	@Override
-	public void onImpact(Enemy enemy) {
+	public void onImpact(Enemy enemy) {		
+		
 		this.setZIndex(2);
 		GameScene.getSharedInstance().sortChildren();
 		addToQueue(enemy);
@@ -146,6 +154,13 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 		if (particlesAttached) return;
 		enableParicleSystem();
 	}
+	
+	@Override
+	public void onEnemyOutOfRange(Enemy e){
+		if (queue.contains(e)) queue.remove(e);
+	}
+	
+	
 	@Override
 	public void onIdleInWave() {
 		disableParticleSystem();
@@ -153,7 +168,6 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 	}
 	@Override
 	public void onWaveEnd() {
-		super.onWaveEnd();
 		disableParticleSystem();
 		clearQueue();
 	}

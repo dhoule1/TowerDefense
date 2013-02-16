@@ -1,7 +1,5 @@
 package com.example.towerdefense;
 
-import org.andengine.engine.Engine;
-import org.andengine.engine.LimitedFPSEngine;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
@@ -9,6 +7,7 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.util.FPSLogger;
 import org.andengine.ui.activity.BaseGameActivity;
 
 import android.view.KeyEvent;
@@ -22,10 +21,10 @@ public class TowerDefenseActivity extends BaseGameActivity {
 	private ZoomCamera mCamera;
 
 	//OVERRIDDEN METHODS
-	@Override
-	public Engine onCreateEngine(EngineOptions pEngineOptions) {
-		return new LimitedFPSEngine(pEngineOptions, 60);
-	}
+	//@Override
+	//public Engine onCreateEngine(EngineOptions pEngineOptions) {
+		//return new LimitedFPSEngine(pEngineOptions, 60);
+	//}
 	
 	
 	@Override
@@ -34,6 +33,7 @@ public class TowerDefenseActivity extends BaseGameActivity {
     instance = this;
         
 		EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), this.mCamera);
+		engineOptions.getAudioOptions().setNeedsSound(true);
 		engineOptions.getTouchOptions().setNeedsMultiTouch(true);
 		return engineOptions;
 	}
@@ -56,12 +56,10 @@ public class TowerDefenseActivity extends BaseGameActivity {
 	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback) {
 		try {
 		SceneManager.getInstance().createSplashScene(pOnCreateSceneCallback);
-		//this.mEngine.registerUpdateHandler(new FPSLogger());
+		this.mEngine.registerUpdateHandler(new FPSLogger());
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
-		//this.currentScene = new GameScene();
 	}
 	
 	@Override

@@ -6,12 +6,14 @@ import java.util.List;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.handler.runnable.RunnableHandler;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.primitive.Vector2;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
 import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
@@ -79,7 +81,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	private TowerTile iceTile;
 	
 	//Start button on the HUD
-	private Sprite startButton;	
+	private AnimatedSprite startButton;	
 	
 	//The tower in 'limbo' when it is dragged from the HUD to the scene itself
 	private ITower dragTower;
@@ -118,6 +120,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	
 	//Lives
 	private Integer lives;
+	
+	private float speedFactor;
+	private boolean readyToPressAgain;
+	
+	private DartBulletPool dartBulletPool;
+	private IciclePool iciclePool;
 	
 	
 	//***********************************************************
@@ -222,11 +230,26 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		flameTile = new TowerTile(resourceManager.getFlameTowerRegion());
 		panel.placeTowerAccess(flameTile, 4);
 		
-		startButton = new Sprite(0.0f,
+		startButton = new AnimatedSprite(0.0f,
 				0.0f, resourceManager.getStartButtonRegion(), activity.getVertexBufferObjectManager()) {
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				startCurrentWave();
+				
+				if (readyToPressAgain) {
+					startCurrentWave();
+					
+					readyToPressAgain = false;
+					this.registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
+			
+						@Override
+						public void onTimePassed(TimerHandler pTimerHandler) {
+							readyToPressAgain = true;
+							unregisterUpdateHandler(pTimerHandler);					
+						}
+						
+					}));
+				}
+						
 				return true;
 			}
 		};
@@ -270,6 +293,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		};
 		
 		this.registerUpdateHandler(collisionDetect);	
+		
+		speedFactor = 1.0f;
+		readyToPressAgain = true;
 		
 /*		SoccerballEnemy enemy = new SoccerballEnemy(resourceManager.getSoccerballRegion());
 		enemy.setPosition(TILE_WIDTH*5 - TILE_WIDTH/4, TILE_HEIGHT*5 - TILE_HEIGHT/4);
@@ -349,6 +375,18 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	public Integer getLives() {
 		return lives;
 	}
+	public void setDartBulletPool(DartBulletPool pool) {
+		this.dartBulletPool = pool;
+	}
+	public DartBulletPool getDartBulletPool() {
+		return this.dartBulletPool;
+	}
+	public void setIciclePool(IciclePool pool) {
+		this.iciclePool = pool;
+	}
+	public IciclePool getIciclePool() {
+		return this.iciclePool;
+	}
 	
 	/**
 	 * Initializes paths and move modifiers of all enemies in the next wave
@@ -380,60 +418,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		for (ITower tower:towers) {
 			tower.onWaveEnd();
 		}
-	}
-	
-	/**
-	 * Removes the dragtower and the currentTile
-	 */
-	public void removeCurrentTower(boolean removeTile) {
-		removeTower(dragTower, removeTile);
-	}
-	
-	/**
-	 * Checks to see if the wave has commenced. Should only fire once per wave
-	 * even though there are 2 distinct ways to end a wave.
-	 * If the wave has ended, it calls the method to initialize the next wave.
-	 */
-	public void seeIfWaveFinished() {		
-		if (!initializedNewWave) {
-			if  ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().size())) {
-				initializedNewWave = true;
-				waveFinished = true;
-				initializeNextWave();
-			}
-		}
-	}	
-	
-	public void addNewEnemyToField(Enemy enemy) {
-		aStarHelper.moveEntity(enemy);
-		this.attachChild(enemy);
-		this.currentWave.getEnemies().add(enemy);
-	}
-	
-	
-	//PRIVATE METHODS
-	/**
-	 * Attaches the move modifiers to each of the enemies in the next wave 
-	 * and attaches the enemies to the scene
-	 */
-	private void startCurrentWave() {
-		if (waveFinished) {
-			Log.i("START WAVE", "START WAVE");
-			waveFinished = false;
-			initializedNewWave = false;
-			waveGenerator.startWave();
-		}
-	}
-	
-	/**
-	 * Checks to see if a x,y coordinate is on the TMXTiledMap
-	 * @param x
-	 * @param y
-	 * @return isOnMap
-	 */
-	private boolean pointOnMap(float x, float y) {
-		return (x < this.mTMXTiledMap.getTileColumns()*TILE_WIDTH
-				&& y < this.mTMXTiledMap.getTileRows()*TILE_HEIGHT);
 	}
 	
 	/**
@@ -470,6 +454,68 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	}	
 	
 	/**
+	 * Removes the dragtower and the currentTile
+	 */
+	public void removeCurrentTower(boolean removeTile) {
+		removeTower(dragTower, removeTile);
+	}
+	
+	/**
+	 * Checks to see if the wave has commenced. Should only fire once per wave
+	 * even though there are 2 distinct ways to end a wave.
+	 * If the wave has ended, it calls the method to initialize the next wave.
+	 */
+	public void seeIfWaveFinished() {		
+		if (!initializedNewWave) {
+			if  ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().size())) {
+				initializedNewWave = true;
+				waveFinished = true;
+				initializeNextWave();
+			}
+		}
+	}	
+	
+	public void addNewEnemyToField(Enemy enemy) {
+		aStarHelper.moveEntity(enemy);
+		this.attachChild(enemy);
+		this.currentWave.getEnemies().add(enemy);
+	}
+	
+	
+	//PRIVATE METHODS
+	
+	private void toggleSpeedFactor() {
+		speedFactor = (speedFactor == 1.0f) ? 2.0f : 1.0f;
+		startButton.setCurrentTileIndex((startButton.getCurrentTileIndex()+1)%2);
+	}
+	
+	/**
+	 * Attaches the move modifiers to each of the enemies in the next wave 
+	 * and attaches the enemies to the scene
+	 */
+	private void startCurrentWave() {
+		if (waveFinished) {
+			Log.i("START WAVE", "START WAVE");
+			waveFinished = false;
+			initializedNewWave = false;
+			waveGenerator.startWave();
+		} else {
+			toggleSpeedFactor();
+		}
+	}
+	
+	/**
+	 * Checks to see if a x,y coordinate is on the TMXTiledMap
+	 * @param x
+	 * @param y
+	 * @return isOnMap
+	 */
+	private boolean pointOnMap(float x, float y) {
+		return (x < this.mTMXTiledMap.getTileColumns()*TILE_WIDTH
+				&& y < this.mTMXTiledMap.getTileRows()*TILE_HEIGHT);
+	}
+	
+	/**
 	 * Detects which enemies are in the range of which towers
 	 * Updates every frame
 	 */
@@ -482,16 +528,20 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 			float realAngle;
 			
 			for (ITower t:towers) {
+				
+				int count = 0;
 				for (Enemy enemy:currentWave.getEnemies()) {
 					if (enemy == null) continue;
-					if (enemy.getUserData() == "dead") continue;
-					
-					t.onImpact(enemy);
+					if (enemy.isDead()) continue;
+				
 					if (stillInRange(t)) {
 						enemy = t.getLockedOn();
 					}
 
 					if(t.inSights(enemy.getXReal(), enemy.getYReal())) {
+						count = 0;
+						
+						t.onImpact(enemy);
 						t.shoot(enemy);
 						if (t.getClass() == IceTower.class) continue;
 						
@@ -502,7 +552,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 						realAngle = (float)(angle * (180.0f/Math.PI));
 						t.getEntity().setRotation(realAngle);
 					} else {
-						t.onIdleInWave();
+						t.onEnemyOutOfRange(enemy);
+						count++;
+						if (count == (currentWave.getEnemies().size() - (this.deadEnemies + aStarHelper.getNumberOfEnemiesFinished()))) t.onIdleInWave();
 					}
 				}
 			}
@@ -636,6 +688,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	//***************************************************
 	//OVERRIDEN METHODS
 	//***************************************************
+	
+	@Override
+	public void onManagedUpdate(float p) {
+		super.onManagedUpdate(p*speedFactor);
+	}
+	
 	@Override
 	public void onPinchZoomStarted(PinchZoomDetector pPinchZoomDetector,
 			TouchEvent pSceneTouchEvent) {
@@ -833,11 +891,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	  			
 	  			//If we are in the middle of a wave, the AStarPath class must update
 	  			//the path since there is now a new tower on the field
-	  			if (aStarHelper.isNavigating()) {
-	  				updateAffectedEnemies(currentTile, true);
-	  			}else {
-	  				updateAffectedEnemies(currentTile, false);
-	  			}
+					updateAffectedEnemies(currentTile, aStarHelper.isNavigating());
 	  		}
 	  		
 	  		else {
@@ -862,10 +916,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
   }
 
 	@Override
-	public void createScene() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void createScene() {	}
 
 	@Override
 	public void onBackKeyPressed() {

@@ -9,7 +9,7 @@ import org.andengine.util.modifier.IModifier;
 public class DartTower extends BaseTower{
 	
 	private static final float SCOPE = 100.0f;
-	private static final float TIME_BETWEEN_SHOTS = 1.0f;
+	private static final float TIME_BETWEEN_SHOTS = 2.0f;
 	private static final int POWER = 3;
 	public static final Integer COST = 5;
 	public static final boolean HAS_BULLETS = true;
@@ -18,7 +18,7 @@ public class DartTower extends BaseTower{
 
 	public DartTower(float pX, float pY,TextureRegion pTextureRegion) {
 		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, pTextureRegion);
-		bulletPool = new DartBulletPool(ResourceManager.getInstance().getDartBulletRegion());
+		bulletPool = GameScene.getSharedInstance().getDartBulletPool();
 	}
 	
 	@Override
@@ -40,11 +40,11 @@ public class DartTower extends BaseTower{
 					@Override
 					public void onModifierFinished(IModifier<IEntity> pModifier,
 							IEntity pItem) {
+						bulletPool.recyclePoolItem(b);
 						if (!e.isDead()) {
 							e.hit(POWER);
 							checkForDeadEnemies(e);
 						}
-						bulletPool.recyclePoolItem(b);
 						
 					}
 			
@@ -52,11 +52,7 @@ public class DartTower extends BaseTower{
 		b.registerEntityModifier(mmodify);
 		mmodify.setAutoUnregisterWhenFinished(true);
 		
-		GameScene.getSharedInstance().attachChild(b);
-	}
-	
-	public void random() {
-		
+		if (!b.hasParent()) GameScene.getSharedInstance().attachChild(b);
 	}
 
 }

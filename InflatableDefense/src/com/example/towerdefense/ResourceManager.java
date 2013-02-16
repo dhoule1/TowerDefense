@@ -1,5 +1,9 @@
 package com.example.towerdefense;
 
+import java.io.IOException;
+
+import org.andengine.audio.sound.Sound;
+import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.opengl.font.Font;
@@ -64,10 +68,13 @@ public class ResourceManager {
 	private TextureRegion upgradeOptionRegion;
 	private TextureRegion deleteOptionRegion;
 	
-	private TextureRegion startButtonRegion;
+	private TiledTextureRegion startButtonRegion;
 	private BuildableBitmapTextureAtlas gameTextureAtlas;
 	
 	private Font font;
+	
+	private Sound popSound;
+	private Sound freezeSound;
 
 	//---------------------------------------------
 	// TEXTURES & TEXTURE REGIONS
@@ -163,7 +170,7 @@ public class ResourceManager {
 		//BULLETS
 		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "dart.png"); //249x71
 		flameParticleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "particle_fire.png"); //32x32
-		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "icicle_trans.png");
+		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "icicle_2_light_trans.png");
 		
 		//SUB-MENU ITEMS
 		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "tower_sight.png"); //100x100
@@ -171,7 +178,7 @@ public class ResourceManager {
 		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_x.png"); //238x208
 		
 		//MISC
-		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "play_button_cropped.png"); //169x169
+		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "play_fast.png",2,1); //169x169
 		
 		try {
 		    this.gameTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
@@ -185,6 +192,14 @@ public class ResourceManager {
 	}
 
 	private void loadGameAudio() {
+		try {
+			popSound = SoundFactory.createSoundFromAsset(engine.getSoundManager(), activity,"sfx/pop.ogg");
+			freezeSound = SoundFactory.createSoundFromAsset(engine.getSoundManager(), activity,"sfx/freeze.ogg");
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -448,11 +463,11 @@ public class ResourceManager {
 		this.deleteOptionRegion = deleteOptionRegion;
 	}
 
-	public TextureRegion getStartButtonRegion() {
+	public TiledTextureRegion getStartButtonRegion() {
 		return startButtonRegion;
 	}
 
-	public void setStartButtonRegion(TextureRegion startButtonRegion) {
+	public void setStartButtonRegion(TiledTextureRegion startButtonRegion) {
 		this.startButtonRegion = startButtonRegion;
 	}
 
@@ -471,6 +486,12 @@ public class ResourceManager {
 		this.font = font;
 	}
 	
+	public Sound getPopSound() {
+		return popSound;
+	}
+	public Sound getFreezeSound() {
+		return freezeSound;
+	}
 	
 	
 }

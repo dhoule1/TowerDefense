@@ -91,8 +91,6 @@ public class AStarPathHelper {
 		if (enemy == null) return true;
 		if (enemy.getUserData() == "dead") return true;
 		
-		Log.i("Speed", ""+enemy.getSpeed());
-		
 		Path path = enemy.getPath();			
 		
 		if (path == null) {

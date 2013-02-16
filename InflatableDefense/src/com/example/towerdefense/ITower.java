@@ -10,6 +10,7 @@ public interface ITower {
 	public boolean inSights(float x, float y);
 	public boolean lockedOnInSight();
 	public void onImpact(Enemy enemy);
+	public void onEnemyOutOfRange(Enemy e);
 	public void onIdleInWave();
 	public void onWaveEnd();
 	public void hitEnemy(Enemy e);

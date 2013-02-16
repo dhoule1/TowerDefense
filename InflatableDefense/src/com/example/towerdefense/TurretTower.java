@@ -59,6 +59,9 @@ public class TurretTower extends AnimatedSprite implements ITower{
 		this.setCurrentTileIndex(1);
 		animate(new long[]{700,100}, 0,1, true);
 	}
+	
+	@Override
+	public void onEnemyOutOfRange(Enemy e){}
 
 	@Override
 	public void onIdleInWave() {

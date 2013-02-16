@@ -22,15 +22,19 @@ public class DartBulletPool extends GenericPool<DartBullet>{
 	
 	@Override
 	protected void onHandleRecycleItem(final DartBullet bullet) {
-		bullet.setIgnoreUpdate(true);
 		bullet.setVisible(false);
+		bullet.destroy();
+		bullet.setIgnoreUpdate(true);
 	}
 	
 	@Override
 	protected void onHandleObtainItem(final DartBullet bullet) {
-		bullet.clearEntityModifiers();
-		bullet.clearUpdateHandlers();
-		bullet.detachSelf();
+		bullet.setIgnoreUpdate(false);
+		bullet.setVisible(true);
+		//bullet.setVisible(true);
+		//bullet.clearEntityModifiers();
+		//bullet.clearUpdateHandlers();
+		//bullet.detachSelf();
 	}
 
 }

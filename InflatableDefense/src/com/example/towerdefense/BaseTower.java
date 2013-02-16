@@ -20,6 +20,8 @@ public class BaseTower extends Sprite implements ITower{
 	private int power;
 	public Integer cost;
 	
+	private boolean readyToShoot;
+	
 	private Rectangle sight;
 	
 	private Enemy lockedOn;
@@ -40,6 +42,8 @@ public class BaseTower extends Sprite implements ITower{
 		
 		entity = this;
 		entity.setZIndex(1);
+		
+		readyToShoot = true;
 	}
 	
 	public void fireBullets(Enemy e){}
@@ -64,6 +68,9 @@ public class BaseTower extends Sprite implements ITower{
 	
 	@Override
 	public void onImpact(Enemy enemy) {}
+	
+	@Override
+	public void onEnemyOutOfRange(Enemy e){}
 
 	@Override
 	public void onIdleInWave() {}
@@ -103,7 +110,8 @@ public class BaseTower extends Sprite implements ITower{
 
 	@Override
 	public void shoot(final Enemy e) {
-		if (this.getEntityModifierCount() == 1) return;
+		if (!readyToShoot) return;
+		readyToShoot = false;
 		DelayModifier modifier = new DelayModifier(timeBetweenShots, new IEntityModifierListener() {
 
 			@Override
@@ -116,10 +124,12 @@ public class BaseTower extends Sprite implements ITower{
 			}
 
 			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {}
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				readyToShoot = true;
+			}
 			
 		});
-		this.registerEntityModifier(modifier);
+		entity.registerEntityModifier(modifier);
 		modifier.setAutoUnregisterWhenFinished(true);
 	}
 

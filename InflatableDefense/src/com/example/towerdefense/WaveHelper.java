@@ -29,7 +29,9 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	
 	
 	
-	//*************CONSTRUCTOR*******************************//
+	//======================================================================
+	//CONSTRUCTOR
+	//======================================================================
 	
 	/**
 	 * The constructor of this class initializes all the waves of enemies for the entire game!
@@ -39,29 +41,20 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		scene = GameScene.getSharedInstance();
 		startTile = scene.getStartTile();
 		aStarHelper = scene.getAStarHelper(); 
-		
-		//this.put(0, new Wave(createEnemyArray(SoldierEnemy.class, 1)));
-		//this.put(1, new Wave(createEnemyArray(FlameEnemy.class, 5)));
-		//this.put(2, new Wave(createEnemyArray(FlameEnemy.class, 7)));
-		//this.put(3, new Wave(createEnemyArray(FlameEnemy.class, 9)));
-		
-/*		for (int i = 0; i < 100; i++) {
-			Class<? extends Enemy> c = (i < 20) ? GruntEnemy.class : SoldierEnemy.class;
-			Wave w = new Wave(createEnemyArray(c, (i+1)));
-			w.setTimeBetweenEnemies(0.5f - (float)i/100);
-			this.put(i, w);
-		}*/
-	  this.put(0,new Wave(createEnemyArray(SoccerballEnemy.class, 1), 1.0f));
-	  this.put(1,new Wave(createEnemyArray(SoccerballEnemy.class, 2), 1.0f));
-	  this.put(2,new Wave(createEnemyArray(SoccerballEnemy.class, 3), 1.0f));
-	  this.put(3,new Wave(createEnemyArray(BasketballEnemy.class, 1), 1.0f));
-	  this.put(4,new Wave(createEnemyArray(SoccerballEnemy.class, 6), 1.0f));
-	  this.put(5,new Wave(createEnemyArray(SoccerballEnemy.class, 7), 0.5f));
-	  this.put(6,new Wave(createEnemyArray(BasketballEnemy.class, 2), 1.0f));
-	  this.put(7,new Wave(createEnemyArray(SoccerballEnemy.class, 9), 0.75f));
-	  this.put(8,new Wave(createEnemyArray(SoccerballEnemy.class, 10), 0.75f));
-	  this.put(9,new Wave(createEnemyArray(SoccerballEnemy.class, 10), 0.5f));
-	  this.put(10,new Wave(createEnemyArray(BasketballEnemy.class, 3), 0.75f));
+	  
+	  for (int i = 1; i <= 100; i++) {
+	  	if (i < 15) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
+	  	else {
+	  		int diversity = (i <= 30) ? 30-i : 2;
+	  	  this.put((i-1), new Wave(createDiverseEnemyArray(i, diversity), (float)(100-i)/100));
+	  	}
+	  }
+	  
+	  IciclePool icePool = new IciclePool(ResourceManager.getInstance().getIcicleRegion());
+	  DartBulletPool dartPool = new DartBulletPool(ResourceManager.getInstance().getDartBulletRegion());
+	  
+	  GameScene.getSharedInstance().setIciclePool(icePool);
+	  GameScene.getSharedInstance().setDartBulletPool(dartPool);
 	}
 	
 	
@@ -187,6 +180,23 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 				enemies.add(new BasketballEnemy(texture));
 			}
 		}
+		return enemies;
+	}
+	
+	private List<Enemy> createDiverseEnemyArray(int num, int diversity) {
+		List<Enemy> enemies = new ArrayList<Enemy>();
+		
+		TiledTextureRegion soccerRegion = ResourceManager.getInstance().getSoccerballRegion();
+		TiledTextureRegion basketRegion = ResourceManager.getInstance().getBasketballRegion();
+		
+		for (int i = 0; i < num; i++) {		
+			
+			if (i != 0 && (double)i%diversity == 0)
+				enemies.add(new BasketballEnemy(basketRegion));
+			else 
+				enemies.add(new SoccerballEnemy(soccerRegion));
+		}
+		
 		return enemies;
 	}
 }
