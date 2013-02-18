@@ -9,7 +9,7 @@ import org.andengine.util.modifier.IModifier;
 public class DartTower extends BaseTower{
 	
 	private static final float SCOPE = 100.0f;
-	private static final float TIME_BETWEEN_SHOTS = 2.0f;
+	private static final float TIME_BETWEEN_SHOTS = 1.0f;//2.0f;
 	private static final int POWER = 3;
 	public static final Integer COST = 5;
 	public static final boolean HAS_BULLETS = true;

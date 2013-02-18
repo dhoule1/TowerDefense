@@ -52,7 +52,7 @@ public class ResourceManager {
 	
 	private TiledTextureRegion soccerballRegion;
 	private TiledTextureRegion basketballRegion;
-	private TextureRegion blackFlameEnemyRegion;
+	private TiledTextureRegion footballRegion;
 	
 	private TiledTextureRegion turretTowerRegion;
 	private TextureRegion dartTowerRegion;
@@ -69,6 +69,8 @@ public class ResourceManager {
 	private TextureRegion deleteOptionRegion;
 	
 	private TiledTextureRegion startButtonRegion;
+	
+	private TextureRegion redScreen;
 	private BuildableBitmapTextureAtlas gameTextureAtlas;
 	
 	private Font font;
@@ -159,7 +161,7 @@ public class ResourceManager {
 		//ENEMIES
 		soccerballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "soccer_ball_tiled.png", 2, 1); //14x27
 		basketballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "basketball_tiled2.png", 2,1); //14x27
-		blackFlameEnemyRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "black_flame_enemy.png"); //14x27
+		footballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "football.png",2,1); //14x27
 		
 		//TOWERS
 		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "turret_tiled.png", 2,1); //80x160
@@ -179,6 +181,7 @@ public class ResourceManager {
 		
 		//MISC
 		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "play_fast.png",2,1); //169x169
+		redScreen = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_screen.png");
 		
 		try {
 		    this.gameTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
@@ -375,12 +378,12 @@ public class ResourceManager {
 		this.basketballRegion = basketballRegion;
 	}
 
-	public TextureRegion getBlackFlameEnemyRegion() {
-		return blackFlameEnemyRegion;
+	public TiledTextureRegion getFootballEnemyRegion() {
+		return this.footballRegion;
 	}
 
-	public void setBlackFlameEnemyRegion(TextureRegion blackFlameEnemyRegion) {
-		this.blackFlameEnemyRegion = blackFlameEnemyRegion;
+	public void setFootballEnemyRegion(TiledTextureRegion footballRegion) {
+		this.footballRegion = footballRegion;
 	}
 
 	public TiledTextureRegion getTurretTowerRegion() {
@@ -471,6 +474,14 @@ public class ResourceManager {
 		this.startButtonRegion = startButtonRegion;
 	}
 
+	public TextureRegion getRedScreen() {
+		return redScreen;
+	}
+	
+	public void setRedScreen(TextureRegion redScreen) {
+		this.redScreen = redScreen;
+	}
+	
 	public BuildableBitmapTextureAtlas getGameTextureAtlas() {
 		return gameTextureAtlas;
 	}

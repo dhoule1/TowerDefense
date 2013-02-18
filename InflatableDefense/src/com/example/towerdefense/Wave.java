@@ -13,7 +13,7 @@ public class Wave {
 	
 	public Wave(List<Enemy> enemies, float time) {
 		this.enemies = enemies;
-		this.timeBetweenEnemies = time;
+		this.timeBetweenEnemies = time/2;
 	}
 	
 	public List<Enemy> getEnemies() {

@@ -16,7 +16,7 @@ public class IceTower extends BaseTower implements ICollectionTower{
 	
 	private static final Object LOCK = new Object();
 	private static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 2.0f;
+	private static final float TIME_BETWEEN_SHOTS = 1.0f;//2.0f;
 	private static final int POWER = 0;
 	public static final Integer COST = 5;
 	public static final boolean HAS_BULLETS = false;

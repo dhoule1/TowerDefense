@@ -143,6 +143,7 @@ public class AStarPathHelper {
 							enemy.destroy();
 							currentlyFinished++;
 							
+							scene.showRedScreen();
 							scene.loseALife(enemy.getEnemyCount());
 							scene.seeIfWaveFinished();
 						}

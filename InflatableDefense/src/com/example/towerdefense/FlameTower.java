@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.entity.Entity;
-import org.andengine.entity.particle.SpriteParticleSystem;
+import org.andengine.entity.particle.BatchedSpriteParticleSystem;
 import org.andengine.entity.particle.emitter.PointParticleEmitter;
 import org.andengine.entity.particle.initializer.RotationParticleInitializer;
 import org.andengine.entity.particle.initializer.VelocityParticleInitializer;
-import org.andengine.entity.particle.modifier.AlphaParticleModifier;
 import org.andengine.entity.particle.modifier.ColorParticleModifier;
 import org.andengine.entity.particle.modifier.ExpireParticleInitializer;
 import org.andengine.entity.particle.modifier.ScaleParticleModifier;
 import org.andengine.entity.primitive.Rectangle;
-import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.UncoloredSprite;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.color.Color;
@@ -21,7 +20,7 @@ import org.andengine.util.color.Color;
 public class FlameTower extends BaseTower implements ICollectionTower{
 	
 	private static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 0.5f;
+	private static final float TIME_BETWEEN_SHOTS = 0.25f;//0.5f;
 	private static final int POWER = 1;
 	public static final Integer COST = 15;
 	public static final boolean HAS_BULLETS = false;
@@ -30,9 +29,9 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 	private static TextureRegion flameRegion1;
 	
 	private Entity entity;
-	private SpriteParticleSystem pSystem1;
-	private SpriteParticleSystem pSystem2;
-	private SpriteParticleSystem pSystem3;
+	private BatchedSpriteParticleSystem pSystem1;
+	private BatchedSpriteParticleSystem pSystem2;
+	private BatchedSpriteParticleSystem pSystem3;
 	
 	private boolean particlesAttached;
 	
@@ -48,35 +47,32 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 		
 		entity = new Entity();
 		
-		pSystem3 = new SpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
-		pSystem3.addParticleInitializer(new ExpireParticleInitializer<Sprite>(5.0f));
-		pSystem3.addParticleInitializer(new VelocityParticleInitializer<Sprite>(-75.0f,-80.0f,-20.0f,20.0f));
-		pSystem3.addParticleInitializer(new RotationParticleInitializer<Sprite>(0.0f,180.0f));
-		pSystem3.addParticleModifier(new ColorParticleModifier<Sprite>(1.0f, 3.0f, 1.0f,1.0f, 0.0f,0.64706f, 0.0f, 1.0f)); //Red
-		pSystem3.addParticleModifier(new AlphaParticleModifier<Sprite>(0.0f, 1.8f, 1.0f,0.0f));
-		pSystem3.addParticleModifier(new ScaleParticleModifier<Sprite>(0.0f, 1.5f,1.0f, 4.5f));	
+		pSystem3 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem3.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
+		pSystem3.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-20.0f,20.0f));
+		pSystem3.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
+		pSystem3.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f,1.0f, 0.0f,0.0f,0.0f,0.0f)); //Red
+		pSystem3.addParticleModifier(new ScaleParticleModifier<UncoloredSprite>(0.0f, 1.5f,1.0f, 3.0f));	
 		pSystem3.setVisible(false);
 		pSystem3.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem3);
 
-		pSystem1 = new SpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
-		pSystem1.addParticleInitializer(new ExpireParticleInitializer<Sprite>(5.0f));
-		pSystem1.addParticleInitializer(new VelocityParticleInitializer<Sprite>(-75.0f,-80.0f,-10.0f,10.0f));
-		pSystem1.addParticleInitializer(new RotationParticleInitializer<Sprite>(0.0f,180.0f));
-		pSystem1.addParticleModifier(new ColorParticleModifier<Sprite>(1.0f, 3.0f, 1.0f, 1.0f, 0.64705f,0.64706f, 0.0f, 1.0f)); //Orange
-		pSystem1.addParticleModifier(new AlphaParticleModifier<Sprite>(0.0f, 1.8f, 1.0f,0.0f));
-		pSystem1.addParticleModifier(new ScaleParticleModifier<Sprite>(0.0f, 1.5f,1.0f, 4.0f));	
+		pSystem1 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem1.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
+		pSystem1.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-10.0f,10.0f));
+		pSystem1.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
+		pSystem1.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f, 1.0f, 0.64706f,0.64706f, 0.0f, 0.0f)); //Orange
+		pSystem1.addParticleModifier(new ScaleParticleModifier<UncoloredSprite>(0.0f, 1.5f,1.0f, 3.0f));	
 		pSystem1.setVisible(false);
 		pSystem1.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem1);
 		
-		pSystem2 = new SpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
-		pSystem2.addParticleInitializer(new ExpireParticleInitializer<Sprite>(5.0f));
-		pSystem2.addParticleInitializer(new VelocityParticleInitializer<Sprite>(-75.0f,-80.0f,0.0f,0.0f));
-		pSystem2.addParticleInitializer(new RotationParticleInitializer<Sprite>(0.0f,180.0f));
-		pSystem2.addParticleModifier(new ColorParticleModifier<Sprite>(1.0f, 3.0f, 1.0f,1.0f, 1.0f,0.64706f, 0.0f, 1.0f)); //Yellow
-		pSystem2.addParticleModifier(new AlphaParticleModifier<Sprite>(0.0f, 1.8f, 1.0f,0.0f));
-		pSystem2.addParticleModifier(new ScaleParticleModifier<Sprite>(0.0f, 1.5f,1.0f, 3.0f));	
+		pSystem2 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem2.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
+		pSystem2.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,0.0f,0.0f));
+		pSystem2.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
+		pSystem2.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f,1.0f, 1.0f,1.0f,0.0f,0.0f)); //Yellow
+		pSystem2.addParticleModifier(new ScaleParticleModifier<UncoloredSprite>(0.0f, 1.5f,1.0f, 3.0f));	
 		pSystem2.setVisible(false);
 		pSystem2.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem2);
@@ -108,15 +104,14 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 		setPSystemVisible(true, pSystem2);
 		setPSystemVisible(true, pSystem3);
 	}
-	
-	
-	private void setPSystemVisible(boolean visible, SpriteParticleSystem ps) {
+
+	private void setPSystemVisible(boolean visible, BatchedSpriteParticleSystem ps) {
 		ps.setVisible(visible);
 		ps.setParticlesSpawnEnabled(visible);
 		particlesAttached = visible;
 	}
 	
-	public SpriteParticleSystem getFireParticleSystem() {
+	public BatchedSpriteParticleSystem getFireParticleSystem() {
 		return pSystem1;
 	}
 	

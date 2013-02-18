@@ -43,7 +43,11 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		aStarHelper = scene.getAStarHelper(); 
 	  
 	  for (int i = 1; i <= 100; i++) {
-	  	if (i < 15) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
+	  	
+	  	if (i != 0 && i%4 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (float)50/100));
+	  	
+	  	else if (i < 15) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
+	  	
 	  	else {
 	  		int diversity = (i <= 30) ? 30-i : 2;
 	  	  this.put((i-1), new Wave(createDiverseEnemyArray(i, diversity), (float)(100-i)/100));
@@ -178,6 +182,12 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			texture = ResourceManager.getInstance().getBasketballRegion();
 			for (int i = 0; i < num; i++) {
 				enemies.add(new BasketballEnemy(texture));
+			}
+		}
+		else if (E == FootballEnemy.class) {
+			texture = ResourceManager.getInstance().getFootballEnemyRegion();
+			for (int i = 0; i < num; i++) {
+				enemies.add(new FootballEnemy(texture));
 			}
 		}
 		return enemies;

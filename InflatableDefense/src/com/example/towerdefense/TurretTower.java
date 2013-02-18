@@ -16,7 +16,7 @@ public class TurretTower extends AnimatedSprite implements ITower{
 	private RectangularShape entity;
 	
 	public static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 1.0f;
+	private static final float TIME_BETWEEN_SHOTS = 0.5f;//1.0f;
 	private static final int POWER = 1;
 	public static final Integer COST = 2;
 	

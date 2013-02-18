@@ -3,6 +3,7 @@ package com.example.towerdefense;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.handler.runnable.RunnableHandler;
@@ -14,6 +15,7 @@ import org.andengine.entity.primitive.Vector2;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
 import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
@@ -30,6 +32,7 @@ import org.andengine.input.touch.detector.ScrollDetector;
 import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener;
 import org.andengine.input.touch.detector.SurfaceScrollDetector;
 import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.util.GLState;
 import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 import org.andengine.util.math.MathUtils;
@@ -294,7 +297,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		
 		this.registerUpdateHandler(collisionDetect);	
 		
-		speedFactor = 1.0f;
+		speedFactor = 0.5f;//1.0f;
 		readyToPressAgain = true;
 		
 /*		SoccerballEnemy enemy = new SoccerballEnemy(resourceManager.getSoccerballRegion());
@@ -386,6 +389,30 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	}
 	public IciclePool getIciclePool() {
 		return this.iciclePool;
+	}
+	
+	public void showRedScreen() {
+		final Sprite redScreen = new Sprite(0.0f,0.0f,ResourceManager.getInstance().getRedScreen(),ResourceManager.getInstance().getVbom()) {
+	      @Override
+	      protected void preDraw(GLState pGLState, Camera pCamera) 
+	      {
+	          super.preDraw(pGLState, pCamera);
+	          pGLState.enableDither();
+	      }
+		};
+		
+		this.attachChild(redScreen);
+		
+		this.registerUpdateHandler(new TimerHandler(0.25f, new ITimerCallback() {
+			
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				detachChild(redScreen);
+				unregisterUpdateHandler(pTimerHandler);					
+			}
+			
+		}));
+		
 	}
 	
 	/**
@@ -485,7 +512,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	//PRIVATE METHODS
 	
 	private void toggleSpeedFactor() {
-		speedFactor = (speedFactor == 1.0f) ? 2.0f : 1.0f;
+		//speedFactor = (speedFactor == 1.0f) ? 2.0f : 1.0f;
+		speedFactor = (speedFactor == 0.5f) ? 1.0f : 0.5f;
 		startButton.setCurrentTileIndex((startButton.getCurrentTileIndex()+1)%2);
 	}
 	

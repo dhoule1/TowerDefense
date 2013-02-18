@@ -121,7 +121,7 @@ public class Enemy extends AnimatedSprite{
 	}
 
 	public float getSpeed() {
-		return speed;
+		return speed/2;
 	}
 	public void returnSpeedToNormal() {
 		this.speed = this.initialSpeed;

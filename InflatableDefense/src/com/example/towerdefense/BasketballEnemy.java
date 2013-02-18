@@ -7,7 +7,7 @@ public class BasketballEnemy extends Enemy{
 	public final static int CHILD_COUNT = 3;
 	
 	private final static int HEALTH = 3;
-	private final static float TRAVEL_SPEED = 0.45f; 
+	private final static float TRAVEL_SPEED = 0.5f; 
 	private final static Integer WORTH = 2;
 
 	public BasketballEnemy(ITiledTextureRegion pTextureRegion, float x, float y,
