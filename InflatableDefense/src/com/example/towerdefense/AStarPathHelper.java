@@ -88,8 +88,7 @@ public class AStarPathHelper {
 	 * @return
 	 */
 	public boolean moveEntity(final Enemy enemy) {		
-		if (enemy == null) return true;
-		if (enemy.getUserData() == "dead") return true;
+		if (enemy.isDead() || enemy.getUserData() == "dead") return true;
 		
 		Path path = enemy.getPath();			
 		
@@ -136,8 +135,8 @@ public class AStarPathHelper {
 						// If the enemy is not on the final tile of the path then refresh
 						// the astar path and do the
 						
-						if (enemy.getX() ==  mFinalPosition.getTileColumn() * GameScene.getTileWidth() - GameScene.getTileWidth()/4&&
-								enemy.getY() == mFinalPosition.getTileRow() * GameScene.getTileHeight()- GameScene.getTileHeight()/4){
+						if (enemy.getX() ==  mFinalPosition.getTileColumn() * GameMap.getTileSize() - GameMap.getTileSize()/4&&
+								enemy.getY() == mFinalPosition.getTileRow() * GameMap.getTileSize() - GameMap.getTileSize()/4){
 							Log.i("", "FINISH");
 							mWayPointIndex = 0;
 							enemy.destroy();
@@ -191,8 +190,8 @@ public class AStarPathHelper {
 		Path current = new Path(aStarPath.getLength());
 		
 		for (int i = 0; i < aStarPath.getLength(); i++) {
-			current.to( aStarPath.getX(i) * GameScene.getTileWidth() + offX,
-					aStarPath.getY(i) * GameScene.getTileHeight() + offY);
+			current.to( aStarPath.getX(i) * GameMap.getTileSize() + offX,
+					aStarPath.getY(i) * GameMap.getTileSize() + offY);
 		}
 		return current;
 	}

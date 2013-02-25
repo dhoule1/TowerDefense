@@ -117,7 +117,7 @@ public class MyAStarPathFinder {
 					int xp = x + current.getX();
 					int yp = y + current.getY();
 					
-					if (isValidTile(current.getX(), current.getY(), xp, yp)) {
+					if (isValidTile(current.getX(), current.getY(), xp, yp, enemy)) {
 						float nextStepCost = current.getCost() + 1;
 						Node neighbor = nodes[yp][xp];
 						
@@ -137,10 +137,7 @@ public class MyAStarPathFinder {
 			}
 		}
 		
-		//Log.i("Parent of toNode", "Size: "+nodes[toY][toX].parent);
-		
 		if (nodes[toY][toX].parent == null) return null;
-		//if (cycleCount == 1) return null;
 
 		
 		Node target = nodes[toY][toX];
@@ -178,15 +175,14 @@ public class MyAStarPathFinder {
 		return mHeuristic.getExpectedRestCost(mPathFinderMap, layer, currentX, currentY, possibleX, possibleY);
 	}
 	
-	private boolean isValidTile(int xc, int yc, int xp, int yp) {
+	private boolean isValidTile(int xc, int yc, int xp, int yp, Enemy enemy) {
 		TMXTile tile;
 		try{
 			tile = layer.getTMXTile(xp, yp);
 			}catch(Exception e) {
 				return false;
 			}
-		//Log.i("Valid", "Valid Placement? "+(!(xc == xp && yc == yp) && !blockedTiles.contains(tile)));
-		return !(xc == xp && yc == yp) && !blockedTiles.contains(tile);
+		return !(xc == xp && yc == yp) && (!blockedTiles.contains(tile) || enemy.getClass() == BeachballEnemy.class);
 	}
 	
 	

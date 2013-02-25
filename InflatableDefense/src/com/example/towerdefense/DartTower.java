@@ -24,6 +24,8 @@ public class DartTower extends BaseTower{
 	@Override
 	public void fireBullets (final Enemy e) {
 		
+		if (e.isDead()) return;
+		
 		final DartBullet b = bulletPool.obtainPoolItem();
 		b.setPosition((this.getX() + this.getWidthScaled()/2) - (b.getWidthScaled() + this.getWidthScaled()*3/2),
 				(this.getY() + this.getHeightScaled()/2) - (this.getHeightScaled()/2));

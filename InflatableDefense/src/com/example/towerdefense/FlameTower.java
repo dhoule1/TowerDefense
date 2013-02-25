@@ -1,8 +1,5 @@
 package com.example.towerdefense;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.andengine.entity.Entity;
 import org.andengine.entity.particle.BatchedSpriteParticleSystem;
 import org.andengine.entity.particle.emitter.PointParticleEmitter;
@@ -17,7 +14,7 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.color.Color;
 
-public class FlameTower extends BaseTower implements ICollectionTower{
+public class FlameTower extends BaseTower {
 	
 	private static final float SCOPE = 60.0f;
 	private static final float TIME_BETWEEN_SHOTS = 0.25f;//0.5f;
@@ -36,8 +33,6 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 	private boolean particlesAttached;
 	
 	private Rectangle psSight;
-	
-	private List<Enemy> queue;
 	
 	public static void initialize(TextureRegion region) {
 		flameRegion1 = region;
@@ -87,8 +82,6 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 		entity.setY(entity.getY()+this.getHeightScaled()/3);
 		
 		particlesAttached = false;
-		
-		queue = new ArrayList<Enemy>();
 	}
 	
 	private void disableParticleSystem() {
@@ -144,27 +137,23 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 		
 		this.setZIndex(2);
 		GameScene.getSharedInstance().sortChildren();
-		addToQueue(enemy);
 		
 		if (particlesAttached) return;
 		enableParicleSystem();
-	}
-	
-	@Override
-	public void onEnemyOutOfRange(Enemy e){
-		if (queue.contains(e)) queue.remove(e);
+		
+		super.onImpact(enemy);
 	}
 	
 	
 	@Override
 	public void onIdleInWave() {
 		disableParticleSystem();
-		clearQueue();
+		super.onIdleInWave();
 	}
 	@Override
 	public void onWaveEnd() {
 		disableParticleSystem();
-		clearQueue();
+		super.onWaveEnd();
 	}
 	
 	@Override
@@ -180,13 +169,5 @@ public class FlameTower extends BaseTower implements ICollectionTower{
 				if (count == KILLING_COUNT) return;
 			}
 		}
-	}
-	@Override
-	public void addToQueue(Enemy e) {
-		if (!queue.contains(e)) queue.add(e);
-	}
-	@Override
-	public void clearQueue() {
-		queue.clear();
 	}
 }

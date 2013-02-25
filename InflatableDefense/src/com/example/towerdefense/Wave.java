@@ -1,17 +1,18 @@
 package com.example.towerdefense;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.andengine.entity.modifier.PathModifier.Path;
 
 
 public class Wave {
 	
-	private List<Enemy> enemies;
+	private CopyOnWriteArrayList<Enemy> enemies;
 	private Path fullPath;
 	private float timeBetweenEnemies;
 	
-	public Wave(List<Enemy> enemies, float time) {
+	public Wave(CopyOnWriteArrayList<Enemy> enemies, float time) {
 		this.enemies = enemies;
 		this.timeBetweenEnemies = time/2;
 	}
@@ -20,7 +21,7 @@ public class Wave {
 		return enemies;
 	}
 	
-	public void setEnemies(List<Enemy> enemies) {
+	public void setEnemies(CopyOnWriteArrayList<Enemy> enemies) {
 		this.enemies = enemies;
 	}
 	

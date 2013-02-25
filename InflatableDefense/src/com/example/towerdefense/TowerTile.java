@@ -11,6 +11,8 @@ import org.andengine.opengl.texture.region.BaseTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.color.Color;
 
+import android.util.Log;
+
 public class TowerTile {
 	
 	static HashMap<BaseTextureRegion, Class<?>> towerMap;
@@ -18,7 +20,9 @@ public class TowerTile {
   private Class<?> T;
 	private Sprite sprite;
 	private Rectangle frame;
-	private boolean isTouched;	
+	
+	private boolean isTouched;
+	private boolean isMoved;
 	
 	public static void initializeMap() {
 		ResourceManager resourceManager = ResourceManager.getInstance();
@@ -39,12 +43,21 @@ public class TowerTile {
 		return sprite;
 	}
 	public boolean getOnTouched() {
-		boolean result  = isTouched;
-		if (isTouched) isTouched=!isTouched;
-		return result;
+		Log.i("isTouched", isTouched+"");
+		if (!isTouched) return isTouched;
+		isTouched = false;
+		return true;
+	}
+	public boolean getOnMoved() {
+		if (!isMoved) return isMoved;
+		isMoved = false;
+		return true;
 	}
 	public void returnOnTouched() {
 		isTouched = false;
+	}
+	public void returnOnMoved() {
+		isMoved = false;
 	}
 	public Class<?> getTowerClass() {
 		return T;
@@ -67,27 +80,18 @@ public class TowerTile {
 		TMXTiledMap map = GameScene.getSharedInstance().getTMXTiledMap();
 		
 		Float height = camera.getHeight() - map.getTileRows()*map.getTileHeight();
-		
-		
-		//frame = new Rectangle((number-1)*height, lowerPanel.getY(), height, height, vbom) {
 		frame = new Rectangle(0.0f,0.0f, height, height, vbom) {
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				isTouched = true;
+				if (pSceneTouchEvent.isActionDown())
+					isTouched = true;
+				else if (pSceneTouchEvent.isActionMove()) {
+					isMoved = true;
+				}
 				return super.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
 			}
 		};
 		frame.setColor(Color.WHITE);
 		sprite = new Sprite(0,0, region, vbom);
 	}
-	
-/*	public static TextureRegion getTextureRegionFromClass(Class<? extends Tower> T) {
-		for (Entry<TextureRegion, Class<? extends Tower>> entry : towerMap.entrySet()) {
-      if (T.equals(entry.getValue())) {
-          return entry.getKey();
-      }
-		}
-		return null;
-	}
-*/
 }

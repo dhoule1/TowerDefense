@@ -42,8 +42,7 @@ public class ResourceManager {
 	private TextureRegion menuTextRegion;
 	private TextureRegion play_region;
 	private BuildableBitmapTextureAtlas menuTextureAtlas;
-	
-	//private TextureRegion levelBackgroundRegion;
+
 	private TextureRegion levelTextRegion;
 	private TextureRegion desertImageProfileRegion;
 	private TextureRegion grassImageProfileRegion;
@@ -53,6 +52,7 @@ public class ResourceManager {
 	private TiledTextureRegion soccerballRegion;
 	private TiledTextureRegion basketballRegion;
 	private TiledTextureRegion footballRegion;
+	private TiledTextureRegion beachballRegion;
 	
 	private TiledTextureRegion turretTowerRegion;
 	private TextureRegion dartTowerRegion;
@@ -125,7 +125,7 @@ public class ResourceManager {
 		FontFactory.setAssetBasePath("font/");
     final ITexture mainFontTexture = new BitmapTextureAtlas(activity.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 
-    font = FontFactory.createStrokeFromAsset(activity.getFontManager(), mainFontTexture, activity.getAssets(), "AeroviasBrasilNF.ttf", 50.0f, true, Color.WHITE, 2, Color.BLACK);
+    font = FontFactory.createStrokeFromAsset(activity.getFontManager(), mainFontTexture, activity.getAssets(), "micross.ttf", 40.0f, true, Color.WHITE, 2, Color.BLACK);
     font.load();
 	}
 
@@ -139,7 +139,7 @@ public class ResourceManager {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/level/");
 		levelChooserTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1000, 1000, TextureOptions.DEFAULT);
 		levelTextRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "level_select_text.png");
-		desertImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "desert_image.png");
+		desertImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "new_desert_image.png");
 		grassImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "grass_image.png");
 		pageBullets = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "bullets.png");
 		
@@ -162,6 +162,7 @@ public class ResourceManager {
 		soccerballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "soccer_ball_tiled.png", 2, 1); //14x27
 		basketballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "basketball_tiled2.png", 2,1); //14x27
 		footballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "football.png",2,1); //14x27
+		beachballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "beach_ball_tiled.png",2,1); //14x27
 		
 		//TOWERS
 		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "turret_tiled.png", 2,1); //80x160
@@ -213,17 +214,16 @@ public class ResourceManager {
 		splashTextureAtlas.load();
 	}
 
-	public void unloadSplashScreen() {
+	public void unloadSplashScene() {
 		splashTextureAtlas.unload();
-		splashRegion = null;
 	}
-	public void unloadMenuTextures() {
+	public void unloadMenuScene() {
 		menuTextureAtlas.unload();
 	}
-	public void unloadLevelChooserTextures() {
+	public void unloadLevelChooserScene() {
 		levelChooserTextureAtlas.unload();
 	}
-	public void unloadGameTextures() {
+	public void unloadGameScene() {
 		gameTextureAtlas.unload();
 	}
 
@@ -386,6 +386,14 @@ public class ResourceManager {
 		this.footballRegion = footballRegion;
 	}
 
+	public TiledTextureRegion getBeachballRegion() {
+		return beachballRegion;
+	}
+	
+	public void setBeachballRegion(TiledTextureRegion beachballRegion) {
+		this.beachballRegion = beachballRegion;
+	}
+	
 	public TiledTextureRegion getTurretTowerRegion() {
 		return turretTowerRegion;
 	}

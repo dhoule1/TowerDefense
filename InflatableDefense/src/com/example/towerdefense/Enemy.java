@@ -1,7 +1,7 @@
 package com.example.towerdefense;
 
 import org.andengine.audio.sound.Sound;
-import org.andengine.entity.modifier.MoveXModifier;
+import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
@@ -16,7 +16,7 @@ public class Enemy extends AnimatedSprite{
 	private float initialSpeed;
 	private Integer worth;
 	private Path path;
-	private MoveXModifier beginningModifier;
+	private MoveModifier beginningModifier;
 	private boolean needToUpdatePath;
 	private int index;
 	private boolean droppedChildren;
@@ -87,7 +87,7 @@ public class Enemy extends AnimatedSprite{
 			float x = this.getPath().getCoordinatesX()[1];
 			int middle = childCount/2;
 			for (int i = 0; i < childCount; i++) {				
-				float result = ((i - middle) * GameScene.getTileWidth()/2);
+				float result = ((i - middle) * GameMap.getTileSize()/2);
 				double modifier = (i/2 - (double)childCount/2) * -1;
 				if (i == middle) modifier = 1;
 				if (this.getX() < x) {
@@ -147,11 +147,11 @@ public class Enemy extends AnimatedSprite{
 		this.path = path;
 	}
 	
-	public void setBeginningModifier(MoveXModifier m) {
+	public void setBeginningModifier(MoveModifier m) {
 		this.beginningModifier = m;
 	}
 	
-	public MoveXModifier getBeginningModifier() {
+	public MoveModifier getBeginningModifier() {
 		return beginningModifier;
 	}
 	
@@ -172,10 +172,10 @@ public class Enemy extends AnimatedSprite{
 	}
 	
 	public float getOffsetX() {
-		return -GameScene.getTileWidth()/4;
+		return -GameMap.getTileSize()/4;
 	}
 	public float getOffsetY() {
-		return -GameScene.getTileHeight()/4;
+		return -GameMap.getTileSize()/4;
 	}
 	
 	public void freeze() {

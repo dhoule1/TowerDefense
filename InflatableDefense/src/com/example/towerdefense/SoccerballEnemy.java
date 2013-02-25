@@ -22,11 +22,6 @@ public class SoccerballEnemy extends Enemy{
 	}
 	
 	@Override
-	public float[] convertLocalToSceneCoordinates(float[] pCoordinates) {
-		return super.convertLocalToSceneCoordinates(pCoordinates);
-	}
-	
-	@Override
 	public void returnHealthToNormal() {
 		this.setHealth(HEALTH);
 	}

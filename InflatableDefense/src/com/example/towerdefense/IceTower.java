@@ -1,7 +1,5 @@
 package com.example.towerdefense;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.andengine.audio.sound.Sound;
@@ -12,11 +10,11 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.util.modifier.IModifier;
 
-public class IceTower extends BaseTower implements ICollectionTower{
+public class IceTower extends BaseTower {
 	
 	private static final Object LOCK = new Object();
 	private static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 1.0f;//2.0f;
+	private static final float TIME_BETWEEN_SHOTS = 2.0f;
 	private static final int POWER = 0;
 	public static final Integer COST = 5;
 	public static final boolean HAS_BULLETS = false;
@@ -24,15 +22,12 @@ public class IceTower extends BaseTower implements ICollectionTower{
 	
 	private IciclePool pool;
 	
-	private List<Enemy> queue;
-	
 	private Random r;
 	
 	private Sound freezeSound;
 
 	public IceTower(float pX, float pY, ITextureRegion pTextureRegion) {
 		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, pTextureRegion);
-		queue = new ArrayList<Enemy>();
 		r = new Random();
 		freezeSound = ResourceManager.getInstance().getFreezeSound();
 		freezeSound.setVolume(2.0f);
@@ -46,24 +41,6 @@ public class IceTower extends BaseTower implements ICollectionTower{
 				pool.recyclePoolItem(icicle);
 			}
 		});
-	}
-	
-	@Override
-	public void onImpact(Enemy enemy) {
-		addToQueue(enemy);
-	}
-	@Override
-	public void onEnemyOutOfRange(Enemy e){
-		if (queue.contains(e)) queue.remove(e);
-	}
-	@Override
-	public void onIdleInWave() {
-		clearQueue();
-	}
-	@Override
-	public void onWaveEnd() {
-		super.onWaveEnd();
-		clearQueue();
 	}
 	
 	@Override
@@ -107,16 +84,4 @@ public class IceTower extends BaseTower implements ICollectionTower{
 			if (count == KILLING_COUNT) return;
 		}
 	}
-
-	@Override
-	public void addToQueue(Enemy e) {
-		if (!queue.contains(e)) queue.add(e);
-	}
-
-	@Override
-	public void clearQueue() {
-		if (queue.isEmpty()) return;
-		queue.clear();
-	}
-
 }

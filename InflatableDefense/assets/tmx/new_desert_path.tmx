@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="20" height="10" tilewidth="40" tileheight="40">
+ <properties>
+  <property name="start" value="true"/>
+ </properties>
+ <tileset firstgid="1" name="desert_tiled" tilewidth="32" tileheight="32" spacing="3" margin="2">
+  <image source="gfx/game/desert_tiled_new.png" width="316" height="211"/>
+  <tile id="13">
+   <properties>
+    <property name="start" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJyTZGBgkARiNiBmB2IOKJ9crAjF/EAsAMSCSGKUYFqZJwT1NymYA4955GBsfpIgI+w5h0iY09I8UuMSGcPCXApJDAButhLt
+  </data>
+ </layer>
+</map>

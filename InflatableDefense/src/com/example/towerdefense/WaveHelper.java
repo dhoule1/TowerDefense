@@ -1,20 +1,21 @@
 package com.example.towerdefense;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.IEntityModifier;
-import org.andengine.entity.modifier.MoveXModifier;
+import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.extension.tmx.TMXTile;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.util.modifier.IModifier;
 
 import android.util.Log;
+
+import com.example.towerdefense.GameMap.StartSide;
 
 public class WaveHelper extends HashMap<Integer, Wave>{
 	
@@ -45,11 +46,11 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	  for (int i = 1; i <= 100; i++) {
 	  	
 	  	if (i != 0 && i%4 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (float)50/100));
-	  	
+	  	else if (i != 0 && i%7 == 0) this.put((i-1), new Wave(createEnemyArray(BeachballEnemy.class, (i/7)), (float)50/100));
 	  	else if (i < 15) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
 	  	
 	  	else {
-	  		int diversity = (i <= 30) ? 30-i : 2;
+	  		int diversity = (i <= 23) ? 25-i : 2;
 	  	  this.put((i-1), new Wave(createDiverseEnemyArray(i, diversity), (float)(100-i)/100));
 	  	}
 	  }
@@ -57,8 +58,8 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	  IciclePool icePool = new IciclePool(ResourceManager.getInstance().getIcicleRegion());
 	  DartBulletPool dartPool = new DartBulletPool(ResourceManager.getInstance().getDartBulletRegion());
 	  
-	  GameScene.getSharedInstance().setIciclePool(icePool);
-	  GameScene.getSharedInstance().setDartBulletPool(dartPool);
+	  scene.setIciclePool(icePool);
+	  scene.setDartBulletPool(dartPool);
 	}
 	
 	
@@ -75,32 +76,46 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		wave = this.get(count);
 		Path path = null;
 		
+		float size = GameMap.getTileSize();
+		StartSide side = scene.getGameMap().getSide();
+		float fromX = 0.0f;
+		float fromY = 0.0f;
+		
+		if (side.compareTo(StartSide.LEFT) == 0) {
+			fromX = -size - size/4;
+			fromY = startTile.getTileRow() * size - size/4;
+		}
+		else if (side.compareTo(StartSide.UP) == 0) {
+			fromX = startTile.getTileColumn() * size - size/4;
+			fromY = -size - size/4;
+		}	
+		
 		for (int i = 0; i < wave.getEnemies().size(); i++) {
-			final Enemy enemy = wave.getEnemies().get(i);
-			enemy.setPosition(-GameScene.getTileWidth()-(GameScene.getTileWidth()/4), startTile.getTileRow()*GameScene.getTileHeight() - GameScene.getTileHeight()/4);
+			final Enemy enemy = wave.getEnemies().get(i);	
+
+			enemy.setPosition(fromX,fromY);
 			
-			MoveXModifier moveModifier;
-			moveModifier = new MoveXModifier(enemy.getSpeed(), 
-					enemy.getX(), (float)(startTile.getTileColumn()*GameScene.getTileWidth()-GameScene.getTileWidth()/4), 
-					new IEntityModifier.IEntityModifierListener() {
+			MoveModifier moveModifier = new MoveModifier(enemy.getSpeed(), enemy.getX(), startTile.getTileColumn()*size - size/4, 
+					enemy.getY(), startTile.getTileRow() * size - size/4, new IEntityModifier.IEntityModifierListener() {
 
-						@Override
-						public void onModifierStarted(IModifier<IEntity> pModifier,
-								IEntity pItem) {	
-						}
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier,
+						IEntity pItem) {	
+				}
 
-						@Override
-						public void onModifierFinished(final IModifier<IEntity> pModifier,
-								IEntity pItem) {
-							aStarHelper.moveEntity(enemy);							
-						}
-				
+				@Override
+				public void onModifierFinished(final IModifier<IEntity> pModifier,
+						IEntity pItem) {
+					aStarHelper.moveEntity(enemy);							
+				}
+		
 			});
+			
 			moveModifier.setAutoUnregisterWhenFinished(true);
 			enemy.setBeginningModifier(moveModifier);
 			Enemy e = null;
 			if (path == null) {
-				e = new Enemy();
+				e = (enemy.getClass() == BeachballEnemy.class) ? new BeachballEnemy() : new Enemy();
 				e.setUserData("dummy");
 				Log.i("Setting Path", "Now");
 				path = aStarHelper.getPath(e);
@@ -144,7 +159,6 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	 * gets called with the update handler
 	 */
 	private void initializeEnemy() {
-		Log.i("Init enemy", "init enemy");
 		int count = 0;
 		for (Enemy enemy:wave.getEnemies()) {
 			if (enemy.getUserData() == null && !enemy.hasParent()) {
@@ -167,10 +181,10 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	 * @param int num
 	 * @return Enemy[]
 	 */
-	private List<Enemy> createEnemyArray(Class<? extends Enemy> E, int num) {
+	private CopyOnWriteArrayList<Enemy> createEnemyArray(Class<? extends Enemy> E, int num) {
 		
 		TiledTextureRegion texture;
-		List<Enemy> enemies = new ArrayList<Enemy>();
+		CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
 		
 		if (E == SoccerballEnemy.class) {
 			texture = ResourceManager.getInstance().getSoccerballRegion();	
@@ -190,11 +204,17 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 				enemies.add(new FootballEnemy(texture));
 			}
 		}
+		else if (E == BeachballEnemy.class) {
+			texture = ResourceManager.getInstance().getBeachballRegion();
+			for (int i = 0; i < num; i++) {
+				enemies.add(new BeachballEnemy(texture));
+			}
+		}
 		return enemies;
 	}
 	
-	private List<Enemy> createDiverseEnemyArray(int num, int diversity) {
-		List<Enemy> enemies = new ArrayList<Enemy>();
+	private CopyOnWriteArrayList<Enemy> createDiverseEnemyArray(int num, int diversity) {
+		CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
 		
 		TiledTextureRegion soccerRegion = ResourceManager.getInstance().getSoccerballRegion();
 		TiledTextureRegion basketRegion = ResourceManager.getInstance().getBasketballRegion();

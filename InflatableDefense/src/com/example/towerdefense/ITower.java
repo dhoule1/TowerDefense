@@ -1,11 +1,17 @@
 package com.example.towerdefense;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.shape.RectangularShape;
 
 public interface ITower {
 	public final static Object LOCK = new Object();
 	
+	public CopyOnWriteArrayList<Enemy> getQueue();
+	public void clearQueue();
+	public void addEnemyToQueue(Enemy enemy);
+	public void removeEnemyFromQueue(Enemy enemy);
 	public void setPosition(float x, float y);
 	public boolean inSights(float x, float y);
 	public boolean lockedOnInSight();

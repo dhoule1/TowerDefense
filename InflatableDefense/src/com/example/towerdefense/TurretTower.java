@@ -1,5 +1,7 @@
 package com.example.towerdefense;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
@@ -23,6 +25,8 @@ public class TurretTower extends AnimatedSprite implements ITower{
 	private Rectangle sight;
 	
 	private Enemy lockedOn;
+	
+	private CopyOnWriteArrayList<Enemy> queue;
 
 	public TurretTower(float pX, float pY, ITiledTextureRegion pTextureRegion) {
 		super(pX, pY, pTextureRegion, ResourceManager.getInstance().getVbom());
@@ -32,6 +36,8 @@ public class TurretTower extends AnimatedSprite implements ITower{
 		
 		entity = this;
 		entity.setZIndex(1);
+		
+		queue = new CopyOnWriteArrayList<Enemy>();
 	}
 
 	@Override
@@ -55,22 +61,27 @@ public class TurretTower extends AnimatedSprite implements ITower{
 	
 	@Override
 	public void onImpact(Enemy enemy) {
+		if (enemy.getUserData() == "dead") return;
 		if (this.isAnimationRunning()) return;
 		this.setCurrentTileIndex(1);
 		animate(new long[]{700,100}, 0,1, true);
 	}
 	
 	@Override
-	public void onEnemyOutOfRange(Enemy e){}
+	public void onEnemyOutOfRange(Enemy e){
+		if (queue.contains(e)) queue.remove(e);
+	}
 
 	@Override
 	public void onIdleInWave() {
+		this.clearQueue();
 		this.setCurrentTileIndex(0);
 		this.stopAnimation();
 	}
 
 	@Override
 	public void onWaveEnd() {
+		this.clearQueue();
 		this.setCurrentTileIndex(0);
 		this.stopAnimation();
 	}
@@ -97,7 +108,8 @@ public class TurretTower extends AnimatedSprite implements ITower{
 
 	@Override
 	public Enemy getLockedOn() {
-		return lockedOn;
+		try {return queue.get(0);}
+		catch(Exception e) {return null;}
 	}
 
 	@Override
@@ -141,5 +153,25 @@ public class TurretTower extends AnimatedSprite implements ITower{
 	@Override
 	public RectangularShape getEntity() {
 		return entity;
+	}
+
+	@Override
+	public CopyOnWriteArrayList<Enemy> getQueue() {
+		return this.queue;
+	}
+	
+	@Override
+	public void clearQueue() {
+		queue.clear();
+	}
+
+	@Override
+	public void addEnemyToQueue(Enemy enemy) {
+		if (!queue.contains(enemy)) queue.add(enemy);
+	}
+
+	@Override
+	public void removeEnemyFromQueue(Enemy enemy) {
+		this.queue.remove(enemy);
 	}
 }

@@ -1,5 +1,7 @@
 package com.example.towerdefense;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
@@ -28,6 +30,8 @@ public class BaseTower extends Sprite implements ITower{
 	
 	private boolean hasBullets;
 	
+	protected CopyOnWriteArrayList<Enemy> queue;
+	
 	public BaseTower(float pX, float pY, float scope, float time, int power, int cost, boolean hasBullets,
 			ITextureRegion pTextureRegion) {
 		super(pX, pY, pTextureRegion, ResourceManager.getInstance().getVbom());
@@ -44,6 +48,8 @@ public class BaseTower extends Sprite implements ITower{
 		entity.setZIndex(1);
 		
 		readyToShoot = true;
+		
+		this.queue = new CopyOnWriteArrayList<Enemy>();
 	}
 	
 	public void fireBullets(Enemy e){}
@@ -70,13 +76,18 @@ public class BaseTower extends Sprite implements ITower{
 	public void onImpact(Enemy enemy) {}
 	
 	@Override
-	public void onEnemyOutOfRange(Enemy e){}
+	public void onEnemyOutOfRange(Enemy e){
+		if (queue.contains(e)) queue.remove(e);
+	}
 
 	@Override
-	public void onIdleInWave() {}
-
+	public void onIdleInWave() {
+		clearQueue();
+	}
 	@Override
-	public void onWaveEnd() {}
+	public void onWaveEnd() {
+		clearQueue();
+	}
 
 	@Override
 	public void hitEnemy(Enemy e) {
@@ -100,7 +111,8 @@ public class BaseTower extends Sprite implements ITower{
 
 	@Override
 	public Enemy getLockedOn() {
-		return lockedOn;
+		try {return queue.get(0);}
+		catch(Exception e) {return null;}
 	}
 
 	@Override
@@ -150,5 +162,24 @@ public class BaseTower extends Sprite implements ITower{
 	@Override
 	public RectangularShape getEntity() {
 		return entity;
+	}
+	@Override
+	public void clearQueue() {
+		queue.clear();
+	}
+
+	@Override
+	public CopyOnWriteArrayList<Enemy> getQueue() {
+		return queue;
+	}
+
+	@Override
+	public void addEnemyToQueue(Enemy enemy) {
+		if (!queue.contains(enemy)) queue.add(enemy);
+	}
+
+	@Override
+	public void removeEnemyFromQueue(Enemy enemy) {
+		this.queue.remove(enemy);
 	}
 }

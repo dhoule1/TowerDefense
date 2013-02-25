@@ -4,8 +4,9 @@ import org.andengine.engine.Engine;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
-import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.ui.IGameInterface.OnCreateSceneCallback;
+
+import com.example.towerdefense.GameMap.MapType;
 
 public class SceneManager {
 //---------------------------------------------
@@ -92,8 +93,9 @@ public class SceneManager {
   	setScene(levelChooserScene);
   }
   public void loadGameScene(final Engine mEngine, final MapType type) {
+  	ResourceManager.getInstance().getCamera().setHUD(null);
   	setScene(loadingScene);
-  	ResourceManager.getInstance().unloadMenuTextures();
+  	ResourceManager.getInstance().unloadLevelChooserScene();
   	mEngine.registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback() {
         public void onTimePassed(final TimerHandler pTimerHandler) {
             mEngine.unregisterUpdateHandler(pTimerHandler);
@@ -106,7 +108,8 @@ public class SceneManager {
   
   public void loadMenuSceneFromLevelChooser(final Engine engine) {
   	levelChooserScene.disposeScene();
-  	ResourceManager.getInstance().unloadLevelChooserTextures();
+  	ResourceManager.getInstance().unloadLevelChooserScene();
+  	ResourceManager.getInstance().getCamera().setHUD(null);
   	
   	ResourceManager.getInstance().loadMenuTextures();
   	setScene(menuScene);
@@ -120,10 +123,9 @@ public class SceneManager {
   	mCamera.set(0, 0, mCamera.getWidth(), mCamera.getHeight());
 		
   	gameScene.disposeScene();
-  	ResourceManager.getInstance().unloadGameTextures();
-  	//ResourceManager.getInstance().getCamera().setZoomFactor(1.0f);
+  	ResourceManager.getInstance().unloadGameScene();
       setScene(loadingScene);      
-      mEngine.registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback() {
+      mEngine.registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
           public void onTimePassed(final TimerHandler pTimerHandler) {
               mEngine.unregisterUpdateHandler(pTimerHandler);
               ResourceManager.getInstance().loadMenuTextures();
@@ -135,18 +137,19 @@ public class SceneManager {
   
   public void disposeSplashScene() {
   	if (splashScene == null) return;
-  	ResourceManager.getInstance().unloadSplashScreen();
+  	ResourceManager.getInstance().unloadSplashScene();
     splashScene.disposeScene();
     splashScene = null;
   }
   public void disposeMenuScene() {
-  	ResourceManager.getInstance().unloadMenuTextures();
+  	ResourceManager.getInstance().unloadMenuScene();
   }
   public void disposeLevelChooserScene() {
-  	ResourceManager.getInstance().unloadLevelChooserTextures();
+  	ResourceManager.getInstance().unloadLevelChooserScene();
+  	levelChooserScene.disposeScene();
   }
   public void disposeGameScene() {
-  	ResourceManager.getInstance().unloadGameTextures();
+  	ResourceManager.getInstance().unloadGameScene();
   }
   
   //---------------------------------------------

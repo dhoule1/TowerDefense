@@ -1,13 +1,13 @@
 package com.example.towerdefense;
 
 import org.andengine.engine.Engine;
-import org.andengine.engine.camera.Camera;
+import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.entity.scene.Scene;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
-import com.example.towerdefense.SceneManager.SceneType;
-
 import android.app.Activity;
+
+import com.example.towerdefense.SceneManager.SceneType;
 
 public abstract class BaseScene extends Scene{
 //---------------------------------------------
@@ -18,7 +18,7 @@ public abstract class BaseScene extends Scene{
   protected Activity activity;
   protected ResourceManager resourceManager;
   protected VertexBufferObjectManager vbom;
-  protected Camera camera;
+  protected ZoomCamera camera;
   
   //---------------------------------------------
   // CONSTRUCTOR

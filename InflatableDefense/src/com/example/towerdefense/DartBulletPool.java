@@ -33,10 +33,6 @@ public class DartBulletPool extends GenericPool<DartBullet>{
 		bullet.setVisible(true);
 		bullet.setZIndex(2);
 		GameScene.getSharedInstance().sortChildren();
-		//bullet.setVisible(true);
-		//bullet.clearEntityModifiers();
-		//bullet.clearUpdateHandlers();
-		//bullet.detachSelf();
 	}
 
 }
