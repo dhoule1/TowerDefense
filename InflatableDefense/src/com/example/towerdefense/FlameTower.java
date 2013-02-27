@@ -1,6 +1,9 @@
 package com.example.towerdefense;
 
 import org.andengine.entity.Entity;
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.DelayModifier;
+import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.entity.particle.BatchedSpriteParticleSystem;
 import org.andengine.entity.particle.emitter.PointParticleEmitter;
 import org.andengine.entity.particle.initializer.RotationParticleInitializer;
@@ -13,13 +16,14 @@ import org.andengine.entity.sprite.UncoloredSprite;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.color.Color;
+import org.andengine.util.modifier.IModifier;
 
 public class FlameTower extends BaseTower {
-	
+
 	private static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 0.25f;//0.5f;
+	private static final float TIME_BETWEEN_SHOTS = 0.25f;
 	private static final int POWER = 1;
-	public static final Integer COST = 15;
+	public static final Integer COST = 225;
 	public static final boolean HAS_BULLETS = false;
 	public static final int KILLING_COUNT = 2;
 	
@@ -33,6 +37,8 @@ public class FlameTower extends BaseTower {
 	private boolean particlesAttached;
 	
 	private Rectangle psSight;
+	
+	private boolean firing;
 	
 	public static void initialize(TextureRegion region) {
 		flameRegion1 = region;
@@ -82,6 +88,8 @@ public class FlameTower extends BaseTower {
 		entity.setY(entity.getY()+this.getHeightScaled()/3);
 		
 		particlesAttached = false;
+		
+		firing = false;
 	}
 	
 	private void disableParticleSystem() {
@@ -139,14 +147,29 @@ public class FlameTower extends BaseTower {
 		GameScene.getSharedInstance().sortChildren();
 		
 		if (particlesAttached) return;
+		
+		firing = true;
 		enableParicleSystem();
 		
-		super.onImpact(enemy);
+		DelayModifier delay = new DelayModifier(1.0f, new IEntityModifierListener() {
+
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
+
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				firing = false;
+			}
+		});
+		this.registerEntityModifier(delay);
+		delay.setAutoUnregisterWhenFinished(true);
 	}
 	
 	
 	@Override
 	public void onIdleInWave() {
+		if (firing) return;
+		
 		disableParticleSystem();
 		super.onIdleInWave();
 	}

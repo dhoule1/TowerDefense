@@ -19,6 +19,7 @@ public class Bullet extends Sprite{
 			@Override
 			public void run() {
 				clearEntityModifiers();
+				detachSelf();
 			}
 		});
 	}

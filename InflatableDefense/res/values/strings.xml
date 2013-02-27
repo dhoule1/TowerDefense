@@ -4,7 +4,7 @@
     <string name="app_name">InflatableDefense</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="money_text">Money: $</string>
+    <string name="money_text">Cash: $</string>
     <string name="wave_text">Wave:</string>
     <string name="life_text">Lives:</string>
 

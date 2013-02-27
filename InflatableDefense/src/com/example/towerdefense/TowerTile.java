@@ -31,6 +31,7 @@ public class TowerTile {
     aMap.put(resourceManager.getDartTowerRegion(), DartTower.class);
     aMap.put(resourceManager.getFlameTowerRegion(), FlameTower.class);
     aMap.put(resourceManager.getIceTowerRegion(), IceTower.class);
+    aMap.put(resourceManager.getSpikeTowerRegion(), SpikeTower.class);
     towerMap = aMap;	
 	}
 	

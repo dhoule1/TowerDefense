@@ -58,6 +58,7 @@ public class ResourceManager {
 	private TextureRegion dartTowerRegion;
 	private TextureRegion flameTowerRegion;
 	private TextureRegion iceTowerRegion;
+	private TiledTextureRegion spikeTowerRegion;
 	
 	private TextureRegion dartBulletRegion;
 	private TextureRegion flameParticleRegion;
@@ -73,7 +74,8 @@ public class ResourceManager {
 	private TextureRegion redScreen;
 	private BuildableBitmapTextureAtlas gameTextureAtlas;
 	
-	private Font font;
+	private Font whiteFont;
+	private Font blackFont;
 	
 	private Sound popSound;
 	private Sound freezeSound;
@@ -123,10 +125,13 @@ public class ResourceManager {
 	}
 	private void loadMenuFonts() {
 		FontFactory.setAssetBasePath("font/");
-    final ITexture mainFontTexture = new BitmapTextureAtlas(activity.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-
-    font = FontFactory.createStrokeFromAsset(activity.getFontManager(), mainFontTexture, activity.getAssets(), "micross.ttf", 40.0f, true, Color.WHITE, 2, Color.BLACK);
-    font.load();
+    final ITexture whiteFontTexture = new BitmapTextureAtlas(activity.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+    whiteFont = FontFactory.createFromAsset(activity.getFontManager(), whiteFontTexture, activity.getAssets(), "shruti.ttf", 40.0f, true, Color.WHITE);
+    whiteFont.load();
+    
+    final ITexture blackFontTexture = new BitmapTextureAtlas(activity.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+    blackFont = FontFactory.createFromAsset(activity.getFontManager(), blackFontTexture, activity.getAssets(), "shruti.ttf", 40.0f, true, Color.BLACK);
+    blackFont.load();
 	}
 
 	private void loadMenuAudio() {}
@@ -169,9 +174,10 @@ public class ResourceManager {
 		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "dart_tower.png"); //80x80
 		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "flame_tower.png"); //80x80
 		iceTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "ice_tower.png"); //80x80
+		spikeTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "spike_tower_tiled.png", 5,1); //80x160
 		
 		//BULLETS
-		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "dart.png"); //249x71
+		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "new_dart.png"); //249x71
 		flameParticleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "particle_fire.png"); //32x32
 		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "icicle_2_light_trans.png");
 		
@@ -181,7 +187,7 @@ public class ResourceManager {
 		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_x.png"); //238x208
 		
 		//MISC
-		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "play_fast.png",2,1); //169x169
+		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "play_fast.png",2,2); //169x169
 		redScreen = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_screen.png");
 		
 		try {
@@ -426,6 +432,14 @@ public class ResourceManager {
 		this.iceTowerRegion = iceTowerRegion;
 	}
 
+	public TiledTextureRegion getSpikeTowerRegion() {
+		return spikeTowerRegion;
+	}
+	
+	public void setSpikeTowerRegion(TiledTextureRegion spikeTowerRegion) {
+		this.spikeTowerRegion = spikeTowerRegion;
+	}
+	
 	public TextureRegion getDartBulletRegion() {
 		return dartBulletRegion;
 	}
@@ -498,11 +512,17 @@ public class ResourceManager {
 		this.gameTextureAtlas = gameTextureAtlas;
 	}
 
-	public Font getFont() {
-		return font;
+	public Font getWhiteFont() {
+		return whiteFont;
 	}
-	public void setFont(Font font) {
-		this.font = font;
+	public void setWhiteFont(Font whiteFont) {
+		this.whiteFont = whiteFont;
+	}
+	public Font getBlackFont() {
+		return blackFont;
+	}
+	public void setBlackFont(Font blackFont) {
+		this.blackFont = blackFont;
 	}
 	
 	public Sound getPopSound() {

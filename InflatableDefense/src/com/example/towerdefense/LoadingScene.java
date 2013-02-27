@@ -11,7 +11,7 @@ public class LoadingScene extends BaseScene{
 	@Override
 	public void createScene() {
 		setBackground(new Background(Color.WHITE));
-    Text text = new Text(0.0f,0.0f,resourceManager.getFont(), "Loading...", vbom);
+    Text text = new Text(0.0f,0.0f,resourceManager.getBlackFont(), "Loading...", vbom);
     text.setPosition(camera.getWidth()/2 - text.getWidthScaled()/2,camera.getHeight()/2 - text.getHeightScaled()/2);
     this.attachChild(text);
 		

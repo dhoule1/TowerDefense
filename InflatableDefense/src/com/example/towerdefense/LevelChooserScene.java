@@ -22,11 +22,8 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 	private float downX;
 	private float downY;
 	
+	private Text levelNumber;	
 	private Text levelDescr;
-	private String levelDescrText;
-	
-	String levelOneText;
-	String levelTwoText;
 	
 	private ScrollScene childScene;
 	
@@ -70,17 +67,22 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 		childScene.registerScrollScenePageListener(this);
 		this.setTouchAreaBindingOnActionDownEnabled(false);
 		
-		levelOneText = "Level 1\nGrasslands";
-		levelTwoText = "Level 2\nDesert";
+		levelNumber = new Text(0.0f,0.0f, resources.getBlackFont(), "Level 999", resources.getVbom());
+		levelDescr = new Text(0.0f,0.0f, resources.getBlackFont(), "Grasslandsssssssss", resources.getVbom());
 		
-		levelDescr = new Text(0.0f,0.0f, resources.getFont(), "Stage 123\nGrasslandsssssssss", resources.getVbom());
-		levelDescrText = levelOneText;		
+		levelNumber.setText("Level 1");
 		
-		levelDescr.setText(levelDescrText);
-		levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2, camera.getHeight() - levelDescr.getHeightScaled() * 1.5f);
+		
+		
+		levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
+				camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
+		levelDescr.setText("Grasslands");
+		levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
+				camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 		
 		HUD hud = new HUD();
 		camera.setHUD(hud);
+		hud.attachChild(levelNumber);
 		hud.attachChild(levelDescr);
 		
 		childScene.attachChild(hud);
@@ -136,9 +138,19 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 	@Override
 	public void onMoveToPageFinished(int pPageNumber) {
 		switch (pPageNumber) {
-			case 0: levelDescr.setText(levelOneText);
+			case 0: levelNumber.setText("Level 1");
+							levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
+									camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
+							levelDescr.setText("Grasslands");
+							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
+									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 			        break;
-			case 1: levelDescr.setText(levelTwoText);
+			case 1: levelNumber.setText("Level 2");
+							levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
+									camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
+							levelDescr.setText("Desert");
+							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
+									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 			        break;
 			default:
 		}

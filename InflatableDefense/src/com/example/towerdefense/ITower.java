@@ -7,7 +7,7 @@ import org.andengine.entity.shape.RectangularShape;
 
 public interface ITower {
 	public final static Object LOCK = new Object();
-	
+
 	public CopyOnWriteArrayList<Enemy> getQueue();
 	public void clearQueue();
 	public void addEnemyToQueue(Enemy enemy);

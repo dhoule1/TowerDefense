@@ -79,6 +79,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	//Ice tower option on the HUD
 	private TowerTile iceTile;
 	
+	//Spike Tower option on the HUD
+	private TowerTile spikeTile;
+	
 	//Start button on the HUD
 	private AnimatedSprite startButton;	
 	
@@ -243,6 +246,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		
 		flameTile = new TowerTile(resourceManager.getFlameTowerRegion());
 		panel.placeTowerAccess(flameTile, 4);
+		
+		spikeTile = new TowerTile(resourceManager.getSpikeTowerRegion());
+		panel.placeTowerAccess(spikeTile, 5);
 		
 		startButton = new AnimatedSprite(0.0f,
 				0.0f, resourceManager.getStartButtonRegion(), activity.getVertexBufferObjectManager()) {
@@ -445,6 +451,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		//that handles their first move modifier would never get unregistered, putting the game in limbo
 		this.unregisterUpdateHandler(waveGenerator.getTimeHandler());
 		
+		if (startButton.getCurrentTileIndex() > 1) startButton.setCurrentTileIndex(startButton.getCurrentTileIndex()-2);
+		
 		waveGenerator.initWave(waveCount);
 		currentWave = waveGenerator.get(waveCount);
 		enemies = (CopyOnWriteArrayList<Enemy>)currentWave.getEnemies();
@@ -533,9 +541,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	//PRIVATE METHODS
 	
 	private void toggleSpeedFactor() {
-		//speedFactor = (speedFactor == 1.0f) ? 2.0f : 1.0f;
 		speedFactor = (speedFactor == 0.5f) ? 1.0f : 0.5f;
-		startButton.setCurrentTileIndex((startButton.getCurrentTileIndex()+1)%2);
+		
+		int startIndex = startButton.getCurrentTileIndex();
+		
+		if (startIndex < 2) startButton.setCurrentTileIndex((startIndex+1)%2);
+		else {
+			if (startIndex == 2) startButton.setCurrentTileIndex(3);
+			else startButton.setCurrentTileIndex(2);
+		}
 	}
 	
 	/**
@@ -544,6 +558,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	 */
 	private void startCurrentWave() {
 		if (waveFinished) {
+			startButton.setCurrentTileIndex(startButton.getCurrentTileIndex()+2);
 			Log.i("START WAVE", "START WAVE");
 			waveFinished = false;
 			initializedNewWave = false;
@@ -613,7 +628,11 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 				
 				t.onImpact(enemy);
 				t.shoot(enemy);
-				if (t.getClass() == IceTower.class) continue;
+				
+				/**
+				 * TODO: Make a "canRotate" variable for each class so this isn't such a hack
+				 */
+				if (t.getClass() == IceTower.class || t.getClass() == SpikeTower.class) continue;
 				
 				dx = t.getEntity().getX()-(enemy.getX()-enemy.getWidthScaled()/3.5f);
 				dy = t.getEntity().getY()-(enemy.getY()-enemy.getHeightScaled()/3.5f);
@@ -868,6 +887,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 				}
 				else if (tClass.equals(IceTower.class) && canAfford(IceTower.COST)) {
 					dragTower = new IceTower(x,y,resourceManager.getIceTowerRegion());
+				}
+				else if (tClass.equals(SpikeTower.class) && canAfford(SpikeTower.COST)) {
+					dragTower = new SpikeTower(x,y,resourceManager.getSpikeTowerRegion());
 				}
 				else towerMove = false;
 				

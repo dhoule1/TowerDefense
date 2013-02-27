@@ -18,7 +18,6 @@ public class BottomPanel extends HUD{
 	private float distanceFromMapToScene;
 	private ZoomCamera mCamera;
 	private Text money;
-	private String moneyText;
 	private Text wave;
 	private String waveText;
 	private Text life;
@@ -47,22 +46,14 @@ public class BottomPanel extends HUD{
 		ResourceManager resourceManager = ResourceManager.getInstance();
 		GameScene scene = GameScene.getSharedInstance();
 		
-		Font font = resourceManager.getFont();
-		
-		moneyText = resourceManager.getActivity().getString(R.string.money_text);
-		money = new Text(0, 0, font, "Money: $1234567890",
-				resourceManager.getVbom());
-		money.setText(moneyText.concat(scene.getMoney()+""));
-		money.setScale(0.7f);
-		money.setPosition(mCamera.getBoundsWidth()/2 + money.getWidthScaled()*3/4, mCamera.getBoundsHeight()*3/4 - money.getHeightScaled()*1.3f);
-		this.attachChild(money);
+		Font font = resourceManager.getWhiteFont();
 		
 		lifeText = resourceManager.getActivity().getString(R.string.life_text);
 		life = new Text(0, 0, font, "Lives: 123",
 				resourceManager.getVbom());
 		life.setText(lifeText+" "+scene.getLives());
 		life.setScale(0.7f);
-		life.setPosition(mCamera.getBoundsWidth()*2/3 + life.getWidthScaled(), -1* mCamera.getBoundsHeight() + life.getHeightScaled()*3.5f);
+		life.setPosition(mCamera.getBoundsWidth()*2/3 + life.getWidthScaled(), -1* mCamera.getBoundsHeight() + life.getHeightScaled()*2.2f);
 		life.setColor(Color.WHITE);
 		this.attachChild(life);
 		
@@ -75,11 +66,19 @@ public class BottomPanel extends HUD{
 		wave.setX(this.getX()+mCamera.getBoundsWidth()/3 + wave.getWidthScaled()/2);
 		this.attachChild(wave);
 		
+		money = new Text(0, 0, font, "$1234567890", resourceManager.getVbom());
+		money.setText("$"+scene.getMoney());
+		money.setScale(0.7f);
+		money.setPosition(wave);
+		money.setX(0.0f);
+		this.attachChild(money);
+		
 		towerTitleText = "Turret Tower";
 		towerTitle = new Text(0,0,font,"Whachamausit Amazing Tower", resourceManager.getVbom());
 		towerTitle.setScale(0.7f);
-		towerTitle.setPosition(money);
-		towerTitle.setX(towerTitle.getX() - money.getWidthScaled() * 1.4f);
+		towerTitle.setPosition(this);
+		towerTitle.setX(this.getX() + mCamera.getWidth()/2);
+		towerTitle.setY(towerTitle.getY() - towerTitle.getHeightScaled()/3);
 		
 		towerCostText = "$10";
 		towerCost = new Text(0,0,font,"Cost: $123456789",resourceManager.getVbom());
@@ -95,8 +94,8 @@ public class BottomPanel extends HUD{
 		towerDeleteCostText = "Remove: $10";
 		towerDeleteCost = new Text(0,0,font,"Remove: $123456789", resourceManager.getVbom());
 		towerDeleteCost.setScale(0.7f);
-		towerDeleteCost.setPosition(towerUpgradeCost);
-		towerDeleteCost.setY(towerCost.getY());
+		towerDeleteCost.setPosition(towerCost);
+		towerDeleteCost.setX(towerDeleteCost.getX() - towerCost.getWidthScaled()/4);
 		
 	}
 	
@@ -130,6 +129,7 @@ public class BottomPanel extends HUD{
 	}
 	
 	public void attachTowerTextDescription(Class<?> T) {
+		
 		if (T == TurretTower.class) {
 			towerTitleText = "Turret Tower";
 			towerCostText = "$"+TurretTower.COST;
@@ -145,6 +145,10 @@ public class BottomPanel extends HUD{
 		else if (T == FlameTower.class) {
 			towerTitleText = "Flame Tower";
 			towerCostText = "$"+FlameTower.COST;
+		}
+		else if (T == SpikeTower.class) {
+			towerTitleText = "Spike Tower";
+			towerCostText = "$"+SpikeTower.COST;
 		}
 		else return;
 		
@@ -175,7 +179,7 @@ public class BottomPanel extends HUD{
 		return tiles;
 	}
 	public void setMoneyText(Integer text) {
-		money.setText(moneyText+text);
+		money.setText("$"+text);
 	}
 	public void setWaveText(Integer text) {
 		wave.setText(waveText+" "+text);

@@ -7,12 +7,14 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.util.modifier.IModifier;
 
 public class DartTower extends BaseTower{
-	
+
 	private static final float SCOPE = 100.0f;
-	private static final float TIME_BETWEEN_SHOTS = 1.0f;//2.0f;
+	private static final float TIME_BETWEEN_SHOTS = 1.0f;
 	private static final int POWER = 3;
-	public static final Integer COST = 5;
+	public static final Integer COST = 25;
 	public static final boolean HAS_BULLETS = true;
+	
+	public static int count = 0;
 	
 	private DartBulletPool bulletPool;
 
@@ -23,8 +25,6 @@ public class DartTower extends BaseTower{
 	
 	@Override
 	public void fireBullets (final Enemy e) {
-		
-		if (e.isDead()) return;
 		
 		final DartBullet b = bulletPool.obtainPoolItem();
 		b.setPosition((this.getX() + this.getWidthScaled()/2) - (b.getWidthScaled() + this.getWidthScaled()*3/2),
@@ -51,10 +51,12 @@ public class DartTower extends BaseTower{
 					}
 			
 		});
-		b.registerEntityModifier(mmodify);
 		mmodify.setAutoUnregisterWhenFinished(true);
+		b.registerEntityModifier(mmodify);
 		
 		if (!b.hasParent()) GameScene.getSharedInstance().attachChild(b);
 	}
+	
+	
 
 }

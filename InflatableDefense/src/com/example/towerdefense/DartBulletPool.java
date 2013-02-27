@@ -31,8 +31,6 @@ public class DartBulletPool extends GenericPool<DartBullet>{
 	protected void onHandleObtainItem(final DartBullet bullet) {
 		bullet.setIgnoreUpdate(false);
 		bullet.setVisible(true);
-		bullet.setZIndex(2);
-		GameScene.getSharedInstance().sortChildren();
 	}
 
 }

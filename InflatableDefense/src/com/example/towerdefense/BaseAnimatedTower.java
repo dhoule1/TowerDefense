@@ -7,14 +7,14 @@ import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.shape.RectangularShape;
-import org.andengine.entity.sprite.Sprite;
-import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.util.modifier.IModifier;
 
 import android.util.Log;
 
-public class BaseTower extends Sprite implements ITower{
-
+public class BaseAnimatedTower extends AnimatedSprite implements ITower {
+	
 	private RectangularShape entity;
 	
 	public float scope;
@@ -22,24 +22,20 @@ public class BaseTower extends Sprite implements ITower{
 	private int power;
 	public Integer cost;
 	
-	private boolean readyToShoot;
-	
 	private Rectangle sight;
 	
 	private Enemy lockedOn;
 	
-	private boolean hasBullets;
-	
 	protected CopyOnWriteArrayList<Enemy> queue;
 	
-	public BaseTower(float pX, float pY, float scope, float time, int power, int cost, boolean hasBullets,
-			ITextureRegion pTextureRegion) {
+	private boolean shooting;
+	
+	public BaseAnimatedTower(float pX, float pY, ITiledTextureRegion pTextureRegion, float scope, float time, int power, int cost) {
 		super(pX, pY, pTextureRegion, ResourceManager.getInstance().getVbom());
 		this.scope = scope;
 		this.timeBetweenShots = time;
 		this.power = power;
 		this.cost = cost;
-		this.hasBullets = hasBullets;
 		sight = new Rectangle(0,0,
 				scope*2, scope*2, ResourceManager.getInstance().getVbom());
 		sight.setPosition(this.getX() - sight.getWidthScaled()*10, this.getY());
@@ -47,12 +43,10 @@ public class BaseTower extends Sprite implements ITower{
 		entity = this;
 		entity.setZIndex(1);
 		
-		readyToShoot = true;
+		queue = new CopyOnWriteArrayList<Enemy>();
 		
-		this.queue = new CopyOnWriteArrayList<Enemy>();
+		shooting = false;
 	}
-	
-	public void fireBullets(Enemy e){}
 
 	@Override
 	public void setPosition(float x, float y) {
@@ -60,6 +54,7 @@ public class BaseTower extends Sprite implements ITower{
 		sight.setPosition((x + this.getWidthScaled()/2) - (sight.getWidthScaled()/2 - this.getWidthScaled() /2), 
 				(y + this.getHeightScaled()/2) - (sight.getHeightScaled()/2 - this.getHeightScaled()/2));
 		SubMenuManager.getReticle(this).setPosition(x-this.getWidthScaled()/3,y-this.getWidthScaled()/3);
+		
 	}
 
 	@Override
@@ -73,7 +68,7 @@ public class BaseTower extends Sprite implements ITower{
 	}
 	
 	@Override
-	public void onImpact(Enemy enemy) {}
+	public void onImpact(Enemy enemy) {	}
 	
 	@Override
 	public void onEnemyOutOfRange(Enemy e){
@@ -82,11 +77,16 @@ public class BaseTower extends Sprite implements ITower{
 
 	@Override
 	public void onIdleInWave() {
-		clearQueue();
+		this.clearQueue();
+		this.setCurrentTileIndex(0);
+		this.stopAnimation();
 	}
+
 	@Override
 	public void onWaveEnd() {
-		clearQueue();
+		this.clearQueue();
+		this.setCurrentTileIndex(0);
+		this.stopAnimation();
 	}
 
 	@Override
@@ -121,27 +121,23 @@ public class BaseTower extends Sprite implements ITower{
 	}
 
 	@Override
-	public void shoot(final Enemy e) {
-		if (!readyToShoot) return;
-		readyToShoot = false;
+	public void shoot(final Enemy e) {		
+		if (shooting) return;
+		
+		shooting = true;
 		DelayModifier modifier = new DelayModifier(timeBetweenShots, new IEntityModifierListener() {
 
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-				if (hasBullets) fireBullets(e);
-				else {
-					hitEnemy(e);
-					checkForDeadEnemies(e);
-				}
+				hitEnemy(e);
+				checkForDeadEnemies(e);
 			}
 
 			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				readyToShoot = true;
-			}
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {shooting = false;}
 			
 		});
-		entity.registerEntityModifier(modifier);
+		this.registerEntityModifier(modifier);
 		modifier.setAutoUnregisterWhenFinished(true);
 	}
 
@@ -163,14 +159,15 @@ public class BaseTower extends Sprite implements ITower{
 	public RectangularShape getEntity() {
 		return entity;
 	}
-	@Override
-	public void clearQueue() {
-		queue.clear();
-	}
 
 	@Override
 	public CopyOnWriteArrayList<Enemy> getQueue() {
-		return queue;
+		return this.queue;
+	}
+	
+	@Override
+	public void clearQueue() {
+		queue.clear();
 	}
 
 	@Override
