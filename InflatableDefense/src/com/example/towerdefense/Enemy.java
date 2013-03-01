@@ -2,6 +2,7 @@ package com.example.towerdefense;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.entity.modifier.MoveModifier;
+import org.andengine.entity.modifier.PathModifier;
 import org.andengine.entity.modifier.PathModifier.Path;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
@@ -17,6 +18,7 @@ public class Enemy extends AnimatedSprite{
 	private Integer worth;
 	private Path path;
 	private MoveModifier beginningModifier;
+	private PathModifier pathModifier;
 	private boolean needToUpdatePath;
 	private int index;
 	private boolean droppedChildren;
@@ -153,6 +155,14 @@ public class Enemy extends AnimatedSprite{
 	
 	public MoveModifier getBeginningModifier() {
 		return beginningModifier;
+	}
+	
+	public void setPathModifier(PathModifier m) {
+		this.pathModifier = m;
+	}
+	
+	public PathModifier getMoveModifier() {
+		return pathModifier;
 	}
 	
 	public void setNeedToUpdatePath(boolean needToUpdatePath) {

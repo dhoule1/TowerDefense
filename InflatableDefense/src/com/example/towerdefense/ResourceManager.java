@@ -72,6 +72,12 @@ public class ResourceManager {
 	private TiledTextureRegion startButtonRegion;
 	
 	private TextureRegion redScreen;
+	
+	//In-Game Menu Items
+	private TextureRegion menuButtonRegion;
+	private TextureRegion restartButtonRegion;
+	private TextureRegion quitButtonRegion;
+	
 	private BuildableBitmapTextureAtlas gameTextureAtlas;
 	
 	private Font whiteFont;
@@ -189,6 +195,11 @@ public class ResourceManager {
 		//MISC
 		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "play_fast.png",2,2); //169x169
 		redScreen = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_screen.png");
+		
+		//In-Game Menu Buttons
+		menuButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "menu_button.png");
+		restartButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "restart_button.png");
+		quitButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "quit_button.png"); 
 		
 		try {
 		    this.gameTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
@@ -504,6 +515,24 @@ public class ResourceManager {
 		this.redScreen = redScreen;
 	}
 	
+	public TextureRegion getMenuButtonRegion() {
+		return menuButtonRegion;
+	}
+	public void setMenuButtonRegion(TextureRegion menuButtonRegion) {
+		this.menuButtonRegion = menuButtonRegion;
+	}
+	public TextureRegion getRestartButtonRegion() {
+		return restartButtonRegion;
+	}
+	public void setRestartButtonRegion(TextureRegion restartButtonRegion) {
+		this.restartButtonRegion = restartButtonRegion;
+	}
+	public TextureRegion getQuitButtonRegion() {
+		return quitButtonRegion;
+	}
+	public void setQuitButtonRegion(TextureRegion quitButtonRegion) {
+		this.quitButtonRegion = quitButtonRegion;
+	}
 	public BuildableBitmapTextureAtlas getGameTextureAtlas() {
 		return gameTextureAtlas;
 	}

@@ -43,15 +43,35 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		startTile = scene.getStartTile();
 		aStarHelper = scene.getAStarHelper(); 
 	  
-	  for (int i = 1; i <= 100; i++) {
+	  for (int i = 1; i <= 70; i++) {
 	  	
-	  	if (i != 0 && i%4 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (float)50/100));
-	  	else if (i != 0 && i%7 == 0) this.put((i-1), new Wave(createEnemyArray(BeachballEnemy.class, (i/7)), (float)50/100));
-	  	else if (i < 15) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
+	  	//if (i != 0 && i%4 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (i < 50) ? (float)(50-i)/100 : (float)1/50));
+	  	//else if (i != 0 && i%7 == 0) this.put((i-1), new Wave(createEnemyArray(BeachballEnemy.class, (i/7)), (float)75/100));
+	  	if (i < 15) {
+	  		if (i == 0) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
+	  		else if (i%3 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (float)(50-i)/100));
+	  		else if (i%3 == 1) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
+	  		else this.put((i-1),new Wave(createEnemyArray(BeachballEnemy.class, i), (float)200/100));
+	  	}
 	  	
 	  	else {
 	  		int diversity = (i <= 23) ? 25-i : 2;
-	  	  this.put((i-1), new Wave(createDiverseEnemyArray(i, diversity), (float)(100-i)/100));
+	  		int mod = i%6;
+	  		
+	  		switch (mod) {
+	  		case (0) : this.put((i-1), new Wave(createDiverseEnemyArray(SoccerballEnemy.class, FootballEnemy.class, i, diversity), (i < 47) ? (float)(50-i)/100 : (float)3/50));
+	  		break;
+	  		case (1) : this.put((i-1), new Wave(createDiverseEnemyArray(SoccerballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100));
+	  		break;
+	  		case (2) : this.put((i-1), new Wave(createDiverseEnemyArray(SoccerballEnemy.class, BeachballEnemy.class, i, diversity*3), (float)(100-i)/100));
+	  		break;
+	  		case (3) : this.put((i-1), new Wave(createDiverseEnemyArray(FootballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100));
+	  		break;
+	  		case (4) : this.put((i-1), new Wave(createDiverseEnemyArray(FootballEnemy.class, BeachballEnemy.class, i, diversity*3), (float)(100-i)/100));
+	  		break;
+	  		case (5) : this.put((i-1), new Wave(createDiverseEnemyArray(BeachballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100));
+	  		break;
+	  		}
 	  	}
 	  }
 	  
@@ -115,7 +135,7 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			enemy.setBeginningModifier(moveModifier);
 			Enemy e = null;
 			if (path == null) {
-				e = (enemy.getClass() == BeachballEnemy.class) ? new BeachballEnemy() : new Enemy();
+				e = new Enemy();
 				e.setUserData("dummy");
 				Log.i("Setting Path", "Now");
 				path = aStarHelper.getPath(e);
@@ -125,7 +145,12 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			  scene.removeCurrentTower(true);
 				wave.setFullPath(aStarHelper.getPath(e));
 			}
-			enemy.setPath(wave.getFullPath().deepCopy());
+			if (enemy.getClass() == BeachballEnemy.class) {
+				enemy.setPath(aStarHelper.getPath(enemy));
+			}
+			else {
+				enemy.setPath(wave.getFullPath().deepCopy());
+			}
 			enemy.setIndex(i);
 		}
 			
@@ -213,18 +238,39 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		return enemies;
 	}
 	
-	private CopyOnWriteArrayList<Enemy> createDiverseEnemyArray(int num, int diversity) {
+	private CopyOnWriteArrayList<Enemy> createDiverseEnemyArray(Class<? extends Enemy> E1, Class<? extends Enemy> E2, int num, int diversity) {
 		CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
 		
-		TiledTextureRegion soccerRegion = ResourceManager.getInstance().getSoccerballRegion();
-		TiledTextureRegion basketRegion = ResourceManager.getInstance().getBasketballRegion();
+		ResourceManager resource = ResourceManager.getInstance();
+		TiledTextureRegion soccerR = resource.getSoccerballRegion();
+		TiledTextureRegion basketR = resource.getBasketballRegion();
+		TiledTextureRegion footR = resource.getFootballEnemyRegion();
+		TiledTextureRegion beachR = resource.getBeachballRegion();
 		
-		for (int i = 0; i < num; i++) {		
+		for (int i = 0; i < num; i++) {
+			boolean second = (i != 0 && (double)i%diversity == 0);
 			
-			if (i != 0 && (double)i%diversity == 0)
-				enemies.add(new BasketballEnemy(basketRegion));
-			else 
-				enemies.add(new SoccerballEnemy(soccerRegion));
+			if (!second) {	
+				if (E1 == SoccerballEnemy.class) {
+				  enemies.add(new SoccerballEnemy(soccerR));
+				}else if (E1 == BasketballEnemy.class) {
+					enemies.add(new BasketballEnemy(basketR));
+				}else if (E1 == FootballEnemy.class) {
+					enemies.add(new FootballEnemy(footR));
+				}else if (E1 == BeachballEnemy.class) {
+					enemies.add(new BeachballEnemy(beachR));
+				}
+			}else {
+				if (E2 == SoccerballEnemy.class) {
+				  enemies.add(new SoccerballEnemy(soccerR));
+				}else if (E2 == BasketballEnemy.class) {
+					enemies.add(new BasketballEnemy(basketR));
+				}else if (E2 == FootballEnemy.class) {
+					enemies.add(new FootballEnemy(footR));
+				}else if (E2 == BeachballEnemy.class) {
+					enemies.add(new BeachballEnemy(beachR));
+				}
+			}
 		}
 		
 		return enemies;

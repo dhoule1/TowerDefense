@@ -175,6 +175,7 @@ public class AStarPathHelper {
 				});
 		moveModifier.setAutoUnregisterWhenFinished(true);
 		enemy.registerEntityModifier(moveModifier);
+		enemy.setPathModifier(moveModifier);
 		enemy.returnSpeedToNormal();
 
 		return mHasFinishedPath;

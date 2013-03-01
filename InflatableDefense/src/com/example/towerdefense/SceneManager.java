@@ -95,6 +95,11 @@ public class SceneManager {
   public void loadGameScene(final Engine mEngine, final MapType type) {
   	ResourceManager.getInstance().getCamera().setHUD(null);
   	setScene(loadingScene);
+  	
+  	ZoomCamera mCamera = ResourceManager.getInstance().getCamera();
+  	mCamera.setZoomFactor(1.0f);
+  	mCamera.set(0, 0, mCamera.getWidth(), mCamera.getHeight());
+  	
   	ResourceManager.getInstance().unloadLevelChooserScene();
   	mEngine.registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback() {
         public void onTimePassed(final TimerHandler pTimerHandler) {

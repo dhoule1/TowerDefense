@@ -13,6 +13,8 @@ public interface ITower {
 	public void addEnemyToQueue(Enemy enemy);
 	public void removeEnemyFromQueue(Enemy enemy);
 	public void setPosition(float x, float y);
+	public float getX();
+	public float getY();
 	public boolean inSights(float x, float y);
 	public boolean lockedOnInSight();
 	public void onImpact(Enemy enemy);

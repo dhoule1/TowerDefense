@@ -48,13 +48,13 @@ public class IceTower extends BaseTower {
 		
 		int count = 0;
 		for (final Enemy e:queue) {
-			
-			synchronized(LOCK) {
-				if (e.isFrozen() || e.isDead()) continue;
-				e.freeze();
-				freezeSound.play();
+			if (e.isFrozen() || e.isDead()) continue;
+			if (!e.unregisterEntityModifier(e.getBeginningModifier()) && !e.unregisterEntityModifier(e.getMoveModifier())) {
+				continue;
 			}
-			e.setIgnoreUpdate(true);
+			e.freeze();
+			freezeSound.play();
+			
 			final Sprite icicle = pool.obtainPoolItem();
 			icicle.setScale(0.25f);
 			e.attachChild(icicle);
@@ -71,7 +71,8 @@ public class IceTower extends BaseTower {
 	
 				@Override
 				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-					e.setIgnoreUpdate(false);
+					try {e.registerEntityModifier(e.getMoveModifier());} catch(Exception e){};
+					try	{e.registerEntityModifier(e.getBeginningModifier());} catch(Exception e){};
 					disposeOfIcicle(icicle);
 					e.thaw();
 				}

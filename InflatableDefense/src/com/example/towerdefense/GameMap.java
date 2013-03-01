@@ -15,12 +15,15 @@ public class GameMap {
 	
 	private static final int TILE_SIZE = 40;
 	
+	private MapType type;
+	
 	private int[] startTile;
 	private int[] endTile;
 	
 	private StartSide side;
 	
 	public GameMap(MapType type) {
+		this.type = type;
 		if (type.compareTo(MapType.DESERT) == 0) {
 			startTile = new int[]{0,3};
 			endTile = new int[]{9,16};
@@ -31,6 +34,10 @@ public class GameMap {
 			endTile = new int[]{5,19};
 			side = StartSide.LEFT;
 		}
+	}
+	
+	public MapType getMapType() {
+		return this.type;
 	}
 
 	public int[] getStartTile() {

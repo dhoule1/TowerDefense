@@ -147,7 +147,7 @@ public class BaseTower extends Sprite implements ITower{
 
 	@Override
 	public void checkForDeadEnemies(Enemy e) {
-		synchronized(LOCK) {
+		//synchronized(LOCK) {
 			if (e.isDead() && e.getUserData()!="dead") {
 				GameScene scene = GameScene.getSharedInstance();
 				Log.i("Dead Enemy", "Enemy "+e.getIndex()+" is dead");
@@ -156,7 +156,7 @@ public class BaseTower extends Sprite implements ITower{
 				scene.incrementDeadCount();
 				scene.seeIfWaveFinished();
 			}
-		}
+	//	}
 	}
 
 	@Override

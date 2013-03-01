@@ -55,6 +55,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	
 	//Variables to set up the zoom camera
 	private ZoomCamera mCamera;
+	
 	private SurfaceScrollDetector mScrollDetector;
 	private PinchZoomDetector mPinchZoomDetector;
 	private float mPinchZoomStartedCameraZoomFactor;
@@ -402,6 +403,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	}
 	public Integer getLives() {
 		return lives;
+	}
+	public MapType getMapType() {
+		return this.gameMap.getMapType();
 	}
 	public void setDartBulletPool(DartBulletPool pool) {
 		this.dartBulletPool = pool;
@@ -833,13 +837,13 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	 * Maybe make it its own class?
 	 */
 	@Override
-	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-		Float x = pSceneTouchEvent.getX();
-		Float y = pSceneTouchEvent.getY();
+	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
+		final Float x = pSceneTouchEvent.getX();
+		final Float y = pSceneTouchEvent.getY();
 		
 		currentTile = this.tmxLayer.getTMXTileAt(x,y);
 		
-	// if the user pinches or dragtouches the screen then...
+	  // if the user pinches or dragtouches the screen then...
   	if(this.mPinchZoomDetector != null) {
 			
   		this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
@@ -867,7 +871,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
   		panel.detachTowerTextDescription();
   		panel.attachTowerTextDescription(pointOnTile(TouchEvent.ACTION_DOWN));
   	}
-  	
   	
   	Class<?> tClass;
   	if (pSceneTouchEvent.isActionMove()) {
@@ -999,10 +1002,20 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 			} else if (Math.abs(downCoords.x - x) < 15.0f &&
 					       Math.abs(downCoords.y - y) < 15.0f){
 				
-				ITower tower = pointOnExistingTower(x,y);
+				final ITower tower = pointOnExistingTower(x,y);
 				if (tower != null) {
 					this.attachChild(SubMenuManager.display(tower));
 					panel.attachTowerUpgradeDeleteText(tower);
+					
+					if (Math.abs(camera.getYMin()-0.0f) < 0.00005f) {
+						
+						final float displacement = tower.getRadius() - tower.getEntity().getHeightScaled()/2;
+						if (tower.getY() == -20.0f) {
+							camera.set(camera.getXMin(), camera.getYMin()-displacement, camera.getXMax(), camera.getYMax()-displacement);
+						} else if (tower.getY() == 340.0f) {
+							camera.set(camera.getXMin(), camera.getYMin()+displacement, camera.getXMax(), camera.getYMax()+displacement);
+						}
+					}
 				}
 				
 			}
@@ -1015,7 +1028,17 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 
 	@Override
 	public void onBackKeyPressed() {
-		SceneManager.getInstance().loadMenuSceneFromGame(engine);
+		if (this.hasChildScene()) {
+			this.clearChildScene();
+			this.setChildrenIgnoreUpdate(false);
+			this.attachChild(panel);
+			this.setOnSceneTouchListener(this);
+		}
+		else {
+			this.setChildrenIgnoreUpdate(true);
+			this.setChildScene(new InGameMenuScene(this.camera));
+			this.setOnSceneTouchListener(null);
+		}
 	}
 
 	@Override

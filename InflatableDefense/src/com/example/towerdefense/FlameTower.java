@@ -43,12 +43,12 @@ public class FlameTower extends BaseTower {
 	public static void initialize(TextureRegion region) {
 		flameRegion1 = region;
 	}
-	public FlameTower(float pX, float pY, ITextureRegion pTextureRegion) {
+	public FlameTower(final float pX, final float pY, final ITextureRegion pTextureRegion) {
 		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS,pTextureRegion);
 		
 		entity = new Entity();
 		
-		pSystem3 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem3 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 		pSystem3.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
 		pSystem3.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-20.0f,20.0f));
 		pSystem3.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
@@ -58,7 +58,7 @@ public class FlameTower extends BaseTower {
 		pSystem3.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem3);
 
-		pSystem1 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem1 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 		pSystem1.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
 		pSystem1.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-10.0f,10.0f));
 		pSystem1.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
@@ -68,7 +68,7 @@ public class FlameTower extends BaseTower {
 		pSystem1.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem1);
 		
-		pSystem2 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 40, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem2 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, TowerDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 		pSystem2.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
 		pSystem2.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,0.0f,0.0f));
 		pSystem2.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
@@ -106,7 +106,7 @@ public class FlameTower extends BaseTower {
 		setPSystemVisible(true, pSystem3);
 	}
 
-	private void setPSystemVisible(boolean visible, BatchedSpriteParticleSystem ps) {
+	private void setPSystemVisible(final boolean visible, final BatchedSpriteParticleSystem ps) {
 		ps.setVisible(visible);
 		ps.setParticlesSpawnEnabled(visible);
 		particlesAttached = visible;
@@ -127,8 +127,8 @@ public class FlameTower extends BaseTower {
 	}
 	
 	@Override
-	public boolean inSights(float x, float y) {
-		boolean a = super.getSight().contains(x, y);
+	public boolean inSights(final float x, final float y) {
+		boolean a = super.inSights(x, y);
 		boolean b = psSight.contains(x, y);
 		
 		return a || b;
@@ -141,12 +141,11 @@ public class FlameTower extends BaseTower {
 	}
 	
 	@Override
-	public void onImpact(Enemy enemy) {		
+	public void onImpact(final Enemy enemy) {				
+		if (particlesAttached) return;
 		
 		this.setZIndex(2);
 		GameScene.getSharedInstance().sortChildren();
-		
-		if (particlesAttached) return;
 		
 		firing = true;
 		enableParicleSystem();
@@ -168,7 +167,7 @@ public class FlameTower extends BaseTower {
 	
 	@Override
 	public void onIdleInWave() {
-		if (firing) return;
+		if(firing) return;
 		
 		disableParticleSystem();
 		super.onIdleInWave();
@@ -181,15 +180,13 @@ public class FlameTower extends BaseTower {
 	
 	@Override
 	public void hitEnemy(Enemy e) {
-		int count = 0;
 		for (int i = 0; i < queue.size(); i++) {
-			Enemy enemy = queue.get(i);
+			final Enemy enemy = queue.get(i);
 			if (enemy.isDead()) continue;
 			if (psSight.contains(enemy.getXReal(), enemy.getYReal())) {
 				enemy.hit(POWER);
 				checkForDeadEnemies(enemy);
-				count++;
-				if (count == KILLING_COUNT) return;
+				if ((i+1) == KILLING_COUNT) return;
 			}
 		}
 	}
