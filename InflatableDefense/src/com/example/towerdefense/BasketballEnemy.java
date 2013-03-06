@@ -10,11 +10,11 @@ public class BasketballEnemy extends Enemy{
 	private final static float TRAVEL_SPEED = 0.5f; 
 	private final static Integer WORTH = 2;
 
-	public BasketballEnemy(ITiledTextureRegion pTextureRegion, float x, float y,
+/*	public BasketballEnemy(ITiledTextureRegion pTextureRegion, float x, float y,
 			int health, float speed, Integer worth) {
 		super(pTextureRegion, CHILD_COUNT, x, y, health, speed, worth);
 		this.setScale(0.70f);
-	}
+	}*/
 	
 	public BasketballEnemy(ITiledTextureRegion region) {
 		super(region, CHILD_COUNT, 0.0f, 0.0f, HEALTH, TRAVEL_SPEED, WORTH);
@@ -27,7 +27,6 @@ public class BasketballEnemy extends Enemy{
 	
 	@Override
 	public void createNewChild(float x, float y, double modifier, int index) {
-		//final SoccerballEnemy child = new SoccerballEnemy(ResourceManager.getInstance().getSoccerballRegion());
 	  final SoccerballEnemy child = (SoccerballEnemy)childArray[index];
 		child.setPosition(x, y);
 		child.setPath(this.getPath());

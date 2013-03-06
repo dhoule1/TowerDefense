@@ -77,6 +77,8 @@ public class Enemy extends AnimatedSprite{
 			dropChildren();
 			pop.play();
 		}
+		
+		GameScene.getSharedInstance().seeIfWaveFinished();
 	}
 	
 	/**
@@ -120,6 +122,10 @@ public class Enemy extends AnimatedSprite{
 
 	public void setHealth(int health) {
 		this.health = health;
+	}
+	
+	public void multiplyHealth(float multiplier) {
+		this.health *= multiplier;
 	}
 
 	public float getSpeed() {

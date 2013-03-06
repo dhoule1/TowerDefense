@@ -1,9 +1,11 @@
 package com.example.towerdefense;
 
+import org.andengine.extension.tmx.TMXTiledMap;
+
 public class GameMap {	
 	
 	public enum MapType {
-		DESERT,GRASS;
+		DESERT,GRASS,TUNDRA;
 	}
 	public enum StartSide {
 		LEFT,
@@ -14,6 +16,8 @@ public class GameMap {
 	
 	
 	private static final int TILE_SIZE = 40;
+	
+	private TMXTiledMap map;
 	
 	private MapType type;
 	
@@ -33,6 +37,11 @@ public class GameMap {
 			startTile = new int[]{5,0};
 			endTile = new int[]{5,19};
 			side = StartSide.LEFT;
+		}
+		else if (type.compareTo(MapType.TUNDRA) == 0) {
+			startTile = new int[]{0,9};
+			endTile = new int[]{9,9};
+			side = StartSide.UP;
 		}
 	}
 	
@@ -66,6 +75,13 @@ public class GameMap {
 
 	public void setSide(StartSide side) {
 		this.side = side;
+	}
+	
+	public void setMap(TMXTiledMap map) {
+		this.map = map;
+	}
+	public TMXTiledMap getMap() {
+		return this.map;
 	}
 	
 

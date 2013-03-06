@@ -11,7 +11,7 @@ public class DartTower extends BaseTower{
 	private static final float SCOPE = 100.0f;
 	private static final float TIME_BETWEEN_SHOTS = 1.0f;
 	private static final int POWER = 3;
-	public static final Integer COST = 25;
+	public static final Integer COST = 30;
 	public static final boolean HAS_BULLETS = true;
 	
 	public static int count = 0;

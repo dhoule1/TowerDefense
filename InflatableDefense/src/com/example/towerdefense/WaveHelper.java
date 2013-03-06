@@ -45,34 +45,66 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	  
 	  for (int i = 1; i <= 70; i++) {
 	  	
-	  	//if (i != 0 && i%4 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (i < 50) ? (float)(50-i)/100 : (float)1/50));
-	  	//else if (i != 0 && i%7 == 0) this.put((i-1), new Wave(createEnemyArray(BeachballEnemy.class, (i/7)), (float)75/100));
+	  	Wave w = null;
+	  	
 	  	if (i < 15) {
-	  		if (i == 0) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
-	  		else if (i%3 == 0) this.put((i-1),new Wave(createEnemyArray(FootballEnemy.class, i), (float)(50-i)/100));
-	  		else if (i%3 == 1) this.put((i-1),new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100));
-	  		else this.put((i-1),new Wave(createEnemyArray(BeachballEnemy.class, i), (float)200/100));
+	  		
+	  		if (i == 1) w = new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100, 1.0f);
+	  		else if (i == 2) w = new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100, 1.0f);
+	  		else if (i == 3) w = new Wave(createEnemyArray(FootballEnemy.class, i), (float)(100-i)/100, 1.0f);
+	  		
+	  		else if (i%3 == 0) w = new Wave(createEnemyArray(FootballEnemy.class, i), (float)(50-i)/100, 1.0f);
+	  		else if (i%3 == 1) w = new Wave(createEnemyArray(SoccerballEnemy.class, i), (float)(100-i)/100, 1.0f);
+	  		else w = new Wave(createDiverseEnemyArray(SoccerballEnemy.class, FootballEnemy.class, i, 3), (float)(75-i)/100, 1.0f);
 	  	}
 	  	
 	  	else {
+	  		
+	  		float difficultyMultiplier = (i < 35) ? 1.0f : (float)i/25;
+	  		
+	  		if (i%10 == 0) {
+	  			w = new Wave(createEnemyArray(BowlingballEnemy.class, (i/10)-1), 2, difficultyMultiplier);
+	  			
+			  	for (Enemy enemy : w.getEnemies()) {
+			  		for (Enemy child : enemy.childArray) {
+			  			child.multiplyHealth(difficultyMultiplier);
+			  		}
+			  	}		  	
+			  	this.put((i-1), w);
+	  			continue;
+	  		}
+	  		
 	  		int diversity = (i <= 23) ? 25-i : 2;
 	  		int mod = i%6;
 	  		
 	  		switch (mod) {
-	  		case (0) : this.put((i-1), new Wave(createDiverseEnemyArray(SoccerballEnemy.class, FootballEnemy.class, i, diversity), (i < 47) ? (float)(50-i)/100 : (float)3/50));
+	  		case (0) : w = new Wave (createDiverseEnemyArray(SoccerballEnemy.class, FootballEnemy.class, i, diversity), (i < 57) ? (float)(60-i)/100 : (float)3/50, difficultyMultiplier);
 	  		break;
-	  		case (1) : this.put((i-1), new Wave(createDiverseEnemyArray(SoccerballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100));
+	  		case (1) : w = new Wave(createDiverseEnemyArray(SoccerballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100, difficultyMultiplier);
 	  		break;
-	  		case (2) : this.put((i-1), new Wave(createDiverseEnemyArray(SoccerballEnemy.class, BeachballEnemy.class, i, diversity*3), (float)(100-i)/100));
+	  		case (2) : w = new Wave(createDiverseEnemyArray(SoccerballEnemy.class, BeachballEnemy.class, i, diversity*3), (float)(100-i)/100, difficultyMultiplier);
 	  		break;
-	  		case (3) : this.put((i-1), new Wave(createDiverseEnemyArray(FootballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100));
+	  		case (3) : w = new Wave(createDiverseEnemyArray(FootballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100, difficultyMultiplier);
 	  		break;
-	  		case (4) : this.put((i-1), new Wave(createDiverseEnemyArray(FootballEnemy.class, BeachballEnemy.class, i, diversity*3), (float)(100-i)/100));
+	  		case (4) : w = new Wave(createDiverseEnemyArray(FootballEnemy.class, BeachballEnemy.class, i, diversity*3), (float)(75-i)/100, difficultyMultiplier);
 	  		break;
-	  		case (5) : this.put((i-1), new Wave(createDiverseEnemyArray(BeachballEnemy.class, BasketballEnemy.class, i, diversity), (float)(100-i)/100));
+	  		case (5) : w = new Wave(createEnemyArray(BeachballEnemy.class, i/3), (float)(175-i)/100, difficultyMultiplier);
 	  		break;
 	  		}
+	  		
+		  	for (Enemy enemy : w.getEnemies()) {
+		  		for (Enemy child : enemy.childArray) {
+		  			child.multiplyHealth(difficultyMultiplier);
+		  		}
+		  	}
 	  	}
+	  	
+	  	this.put((i-1), w);
+	  }
+	  
+	  for (int i = 0; i < this.size(); i++) {
+	  	Wave w = this.get(i);
+	  	Log.i("Wave "+i, w+"");
 	  }
 	  
 	  IciclePool icePool = new IciclePool(ResourceManager.getInstance().getIcicleRegion());
@@ -112,6 +144,8 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 		
 		for (int i = 0; i < wave.getEnemies().size(); i++) {
 			final Enemy enemy = wave.getEnemies().get(i);	
+			
+			if (i == 0) Log.i("Enemy: "+enemy, "Health: "+enemy.getHealth());
 
 			enemy.setPosition(fromX,fromY);
 			
@@ -233,6 +267,12 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 			texture = ResourceManager.getInstance().getBeachballRegion();
 			for (int i = 0; i < num; i++) {
 				enemies.add(new BeachballEnemy(texture));
+			}
+		}
+		else if (E == BowlingballEnemy.class) {
+			texture = ResourceManager.getInstance().getBowlingballRegion();
+			for (int i = 0; i < num; i++) {
+				enemies.add(new BowlingballEnemy(texture));
 			}
 		}
 		return enemies;

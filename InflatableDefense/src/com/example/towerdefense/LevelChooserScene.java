@@ -18,6 +18,7 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 	
 	private Sprite desertSprite;
 	private Sprite grassSprite;
+	private Sprite tundraSprite;
 	
 	private float downX;
 	private float downY;
@@ -63,6 +64,11 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 		page2.attachChild(desertSprite);
 		childScene.addPage(page2);
 		
+		final Rectangle page3 = new Rectangle(0.0f,0.0f,0.0f,0.0f, resources.getVbom());
+		tundraSprite = new Sprite(centerX,centerY,resources.getTundraImageProfileRegion(), resources.getVbom());
+		page3.attachChild(tundraSprite);
+		childScene.addPage(page3);
+		
 		childScene.setEaseFunction(EaseBackOut.getInstance());
 		childScene.registerScrollScenePageListener(this);
 		this.setTouchAreaBindingOnActionDownEnabled(false);
@@ -104,6 +110,11 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 					else if (desertSprite.contains(x, y) && childScene.getCurrentPage().equals(page2)) {
 						if (Math.abs(downX - x) < 10.0f && Math.abs(downY - y) < 10.0f) {
 							SceneManager.getInstance().loadGameScene(ResourceManager.getInstance().getEngine(), MapType.DESERT);
+						}
+					}
+					else if (tundraSprite.contains(x, y) && childScene.getCurrentPage().equals(page3)) {
+						if (Math.abs(downX - x) < 10.0f && Math.abs(downY - y) < 10.0f) {
+							SceneManager.getInstance().loadGameScene(ResourceManager.getInstance().getEngine(), MapType.TUNDRA);
 						}
 					}
 				}
@@ -152,6 +163,13 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
 									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 			        break;
+			case 2: levelNumber.setText("Level 3");
+							levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
+									camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
+							levelDescr.setText("Tundra");
+							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
+									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
+      break;
 			default:
 		}
 	}

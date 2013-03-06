@@ -21,7 +21,7 @@ import org.andengine.util.modifier.IModifier;
 public class FlameTower extends BaseTower {
 
 	private static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 0.25f;
+	private static final float TIME_BETWEEN_SHOTS = 0.8f;
 	private static final int POWER = 1;
 	public static final Integer COST = 225;
 	public static final boolean HAS_BULLETS = false;

@@ -9,8 +9,6 @@ import org.andengine.entity.scene.menu.item.SpriteMenuItem;
 import org.andengine.entity.scene.menu.item.decorator.ScaleMenuItemDecorator;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
-import android.util.Log;
-
 public class InGameMenuScene extends MenuScene implements IOnMenuItemClickListener{
 	
 	private final int MENU = 0;
@@ -33,14 +31,6 @@ public class InGameMenuScene extends MenuScene implements IOnMenuItemClickListen
 		this.buildAnimations();
 		this.setBackgroundEnabled(false);
 		this.setOnMenuItemClickListener(this);
-	}
-	
-	@Override
-	public void onAttached() {
-		super.onAttached();
-		Log.i("Here", "Here");
-		
-		this.getParent().getParent().setIgnoreUpdate(true);
 	}
 
 	@Override

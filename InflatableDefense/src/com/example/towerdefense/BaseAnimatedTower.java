@@ -30,12 +30,17 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	
 	private boolean shooting;
 	
-	public BaseAnimatedTower(float pX, float pY, ITiledTextureRegion pTextureRegion, float scope, float time, int power, int cost) {
+	private int animationTime;
+	private long startTime;
+	
+	public BaseAnimatedTower(float pX, float pY, ITiledTextureRegion pTextureRegion, float scope, float time, int power, int cost, int animationTime) {
 		super(pX, pY, pTextureRegion, ResourceManager.getInstance().getVbom());
 		this.scope = scope;
 		this.timeBetweenShots = time;
 		this.power = power;
 		this.cost = cost;
+		this.animationTime = animationTime;
+		
 		sight = new Rectangle(0,0,
 				scope*2, scope*2, ResourceManager.getInstance().getVbom());
 		sight.setPosition(this.getX() - sight.getWidthScaled()*10, this.getY());
@@ -47,6 +52,8 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 		
 		shooting = false;
 	}
+	
+	public void animate(){}
 
 	@Override
 	public void setPosition(float x, float y) {
@@ -68,7 +75,11 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	}
 	
 	@Override
-	public void onImpact(Enemy enemy) {	}
+	public void onImpact(Enemy enemy) {
+		if (this.isAnimationRunning()) return;
+		startTime = System.currentTimeMillis();
+		animate();
+	}
 	
 	@Override
 	public void onEnemyOutOfRange(Enemy e){
@@ -78,8 +89,10 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	@Override
 	public void onIdleInWave() {
 		this.clearQueue();
-		this.setCurrentTileIndex(0);
-		this.stopAnimation();
+		if (System.currentTimeMillis() - startTime >= animationTime) {
+			this.setCurrentTileIndex(0);
+			this.stopAnimation();
+		}
 	}
 
 	@Override
@@ -123,6 +136,8 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	@Override
 	public void shoot(final Enemy e) {		
 		if (shooting) return;
+		
+		//animate();
 		
 		shooting = true;
 		DelayModifier modifier = new DelayModifier(timeBetweenShots, new IEntityModifierListener() {

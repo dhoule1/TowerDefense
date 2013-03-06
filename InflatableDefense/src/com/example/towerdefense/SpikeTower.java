@@ -9,20 +9,21 @@ import org.andengine.util.modifier.IModifier;
 public class SpikeTower extends BaseAnimatedTower{
 	
 	public static final float SCOPE = 60.0f;
-	private static final float TIME_BETWEEN_SHOTS = 0.2f;
+	private static final float TIME_BETWEEN_SHOTS = 1.2f;
 	private static final int POWER = 2;
 	public static final Integer COST = 150;
+	private static final int KILLING_COUNT = 3;
+	
+	public static final int TOTAL_ANIMATION_TIME = 100;
 	
 	private boolean animate;
 
 	public SpikeTower(float pX, float pY, ITiledTextureRegion pTextureRegion) {
-		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST);
+		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, TOTAL_ANIMATION_TIME);
 	}
 	
-	@Override
-	public void onImpact(Enemy enemy) {
-		if (this.isAnimationRunning()) return;
-		
+	@Override 
+	public void animate() {
 		animate(new long[]{25,25,25,25}, 1,4, true);
 		
 		animate = true;
@@ -38,6 +39,16 @@ public class SpikeTower extends BaseAnimatedTower{
 		});
 		this.registerEntityModifier(delay);
 		delay.setAutoUnregisterWhenFinished(true);
+	}
+	
+	@Override
+	public void hitEnemy(Enemy e) {
+		for (int i = 0; i < queue.size(); i++) {
+			Enemy enemy = queue.get(i);
+			enemy.hit(POWER);
+			checkForDeadEnemies(enemy);
+			if (i+1 == KILLING_COUNT) break;
+		}
 	}
 	
 	@Override

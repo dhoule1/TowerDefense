@@ -12,9 +12,15 @@ public class Wave {
 	private Path fullPath;
 	private float timeBetweenEnemies;
 	
-	public Wave(CopyOnWriteArrayList<Enemy> enemies, float time) {
+	public Wave(CopyOnWriteArrayList<Enemy> enemies, float time, float multiplier) {
 		this.enemies = enemies;
 		this.timeBetweenEnemies = time/2;
+		
+		if (multiplier == 1.0f) return;
+		
+		for (Enemy enemy : enemies) {
+			enemy.multiplyHealth(multiplier);
+		}
 	}
 	
 	public List<Enemy> getEnemies() {

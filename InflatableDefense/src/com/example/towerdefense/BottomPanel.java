@@ -6,11 +6,14 @@ import java.util.List;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.entity.primitive.Line;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.extension.tmx.TMXTiledMap;
 import org.andengine.opengl.font.Font;
 import org.andengine.util.color.Color;
+
+import com.example.towerdefense.GameMap.MapType;
 
 public class BottomPanel extends HUD{
 	
@@ -31,8 +34,17 @@ public class BottomPanel extends HUD{
 	private Text towerDeleteCost;
 	private String towerDeleteCostText;
 	
-	public BottomPanel(ZoomCamera camera, TMXTiledMap map) {
+	public BottomPanel(ZoomCamera camera, GameMap gameMap) {
 		super();
+		
+		if ((gameMap.getMapType() == MapType.TUNDRA)) {
+			Rectangle rect = new Rectangle(0,0, camera.getWidth(), GameMap.getTileSize()*2, ResourceManager.getInstance().getVbom());
+			rect.setColor(Color.WHITE);
+			rect.setPosition(rect.getX(), rect.getY() + camera.getHeight() /2 - rect.getHeight() / 2);
+			this.attachChild(rect);
+		}
+		
+		TMXTiledMap map = gameMap.getMap();
 		
 		tiles = new ArrayList<TowerTile>();
 		
@@ -46,7 +58,9 @@ public class BottomPanel extends HUD{
 		ResourceManager resourceManager = ResourceManager.getInstance();
 		GameScene scene = GameScene.getSharedInstance();
 		
-		Font font = resourceManager.getWhiteFont();
+		Font font = null;
+		
+		font = (gameMap.getMapType() == MapType.TUNDRA) ? resourceManager.getBlackFont() : resourceManager.getWhiteFont();
 		
 		lifeText = resourceManager.getActivity().getString(R.string.life_text);
 		life = new Text(0, 0, font, "Lives: 123",

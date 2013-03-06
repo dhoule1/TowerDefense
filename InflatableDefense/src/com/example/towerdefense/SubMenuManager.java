@@ -72,6 +72,7 @@ public class SubMenuManager {
 		reticle.setScale(sightOriginalScale*(radius/TurretTower.SCOPE));
 		reticle.setPosition(t.getEntity().getX()-t.getEntity().getWidthScaled()/3.5f,
 				t.getEntity().getY()-t.getEntity().getHeightScaled()/3.5f);
+		reticle.setZIndex(1);
 
 		upgradeOption.setPosition(reticle.getX(), reticle.getY());
 		sellOption.setPosition(upgradeOption);
@@ -84,15 +85,15 @@ public class SubMenuManager {
 		upgradeOption.setY(upgradeOption.getY() - reticle.getWidthScaled()/3);
 		sellOption.setY(sellOption.getY() + reticle.getWidthScaled()/3);
 		
-		TowerDefenseActivity.getSharedInstance().runOnUpdateThread(new Runnable() {
-			@Override
-			public void run() {
-				Log.i("Attaching Reticle Now", "NOW");
-				encapsulatingEntity.attachChild(reticle);
-				encapsulatingEntity.attachChild(upgradeOption);
-				encapsulatingEntity.attachChild(sellOption);
-			}
-		});
+		upgradeOption.setZIndex(2);
+		sellOption.setZIndex(2);
+		
+		Log.i("Attaching Reticle Now", "NOW");
+		encapsulatingEntity.attachChild(upgradeOption);
+		encapsulatingEntity.attachChild(sellOption);
+		
+		encapsulatingEntity.attachChild(reticle);
+		encapsulatingEntity.sortChildren();
 		
 		return encapsulatingEntity;
 	}

@@ -6,7 +6,7 @@ public class BeachballEnemy extends Enemy{
 	
 private final static int CHILD_COUNT = 0;
 	
-	private final static int HEALTH = 7;
+	private final static int HEALTH = 18;
 	private final static float TRAVEL_SPEED = 1.0f; 
 	private final static Integer WORTH = 3;
 

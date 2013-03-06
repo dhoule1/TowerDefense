@@ -46,6 +46,7 @@ public class ResourceManager {
 	private TextureRegion levelTextRegion;
 	private TextureRegion desertImageProfileRegion;
 	private TextureRegion grassImageProfileRegion;
+	private TextureRegion tundraImageProfileRegion;
 	private TextureRegion pageBullets;
 	private BuildableBitmapTextureAtlas levelChooserTextureAtlas;
 	
@@ -53,6 +54,7 @@ public class ResourceManager {
 	private TiledTextureRegion basketballRegion;
 	private TiledTextureRegion footballRegion;
 	private TiledTextureRegion beachballRegion;
+	private TiledTextureRegion bowlingballRegion;
 	
 	private TiledTextureRegion turretTowerRegion;
 	private TextureRegion dartTowerRegion;
@@ -78,7 +80,10 @@ public class ResourceManager {
 	private TextureRegion restartButtonRegion;
 	private TextureRegion quitButtonRegion;
 	
-	private BuildableBitmapTextureAtlas gameTextureAtlas;
+	private TextureRegion fireworksRegion;
+	
+	private BuildableBitmapTextureAtlas gameTextureAtlas1;
+	private BuildableBitmapTextureAtlas gameTextureAtlas2;
 	
 	private Font whiteFont;
 	private Font blackFont;
@@ -152,6 +157,7 @@ public class ResourceManager {
 		levelTextRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "level_select_text.png");
 		desertImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "new_desert_image.png");
 		grassImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "grass_image.png");
+		tundraImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "tundra_image.png");
 		pageBullets = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "bullets.png");
 		
 		try {
@@ -167,43 +173,51 @@ public class ResourceManager {
 
 	private void loadGameGraphics() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/game/");
-		gameTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1200, 1200, TextureOptions.DEFAULT);
+		gameTextureAtlas1 = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1200, 1200, TextureOptions.DEFAULT);
+		gameTextureAtlas2 = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 800, 480, TextureOptions.DEFAULT);
 		
 		//ENEMIES
-		soccerballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "soccer_ball_tiled.png", 2, 1); //14x27
-		basketballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "basketball_tiled2.png", 2,1); //14x27
-		footballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "football.png",2,1); //14x27
-		beachballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "beach_ball_tiled.png",2,1); //14x27
+		soccerballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "soccer_ball_tiled_2.png", 2, 1);
+		basketballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "basketball_tiled2.png", 2,1); 
+		footballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "football.png",2,1); 
+		beachballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "beach_ball_tiled_2.png",2,1);
+		bowlingballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "bowling_ball_tiled.png",2,1);
 		
 		//TOWERS
-		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "turret_tiled.png", 2,1); //80x160
-		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "dart_tower.png"); //80x80
-		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "flame_tower.png"); //80x80
-		iceTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "ice_tower.png"); //80x80
-		spikeTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "spike_tower_tiled.png", 5,1); //80x160
+		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "new_turret_tiled.png", 4,1); 
+		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "dart_tower.png"); 
+		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "flame_tower.png"); //80x80
+		iceTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "ice_tower.png"); //80x80
+		spikeTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "spike_tower_tiled.png", 5,1); //80x160
 		
 		//BULLETS
-		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "new_dart.png"); //249x71
-		flameParticleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "particle_fire.png"); //32x32
-		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "icicle_2_light_trans.png");
+		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "new_dart.png"); //249x71
+		flameParticleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "particle_fire.png"); //32x32
+		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "icicle_2_light_trans.png");
 		
 		//SUB-MENU ITEMS
-		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "tower_sight.png"); //100x100
-		upgradeOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "up_arrow.png"); //228x221
-		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_x.png"); //238x208
+		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "tower_sight.png"); //100x100
+		upgradeOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "up_arrow.png"); //228x221
+		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "red_x.png"); //238x208
 		
 		//MISC
-		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "play_fast.png",2,2); //169x169
-		redScreen = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "red_screen.png");
+		startButtonRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "play_fast.png",2,2); //169x169
+		redScreen = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "red_screen.png");
 		
 		//In-Game Menu Buttons
-		menuButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "menu_button.png");
-		restartButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "restart_button.png");
-		quitButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "quit_button.png"); 
+		menuButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "menu_button.png");
+		restartButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "restart_button.png");
+		quitButtonRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "quit_button.png");
+		
+		//fireworks screen
+		fireworksRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas2, activity, "fireworks.png");
 		
 		try {
-		    this.gameTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
-		    this.gameTextureAtlas.load(); }
+		    this.gameTextureAtlas1.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
+		    this.gameTextureAtlas1.load(); 
+		    this.gameTextureAtlas2.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
+		    this.gameTextureAtlas2.load();
+		    }
 		catch (final TextureAtlasBuilderException e){Debug.e(e);}
 
 	}
@@ -241,7 +255,7 @@ public class ResourceManager {
 		levelChooserTextureAtlas.unload();
 	}
 	public void unloadGameScene() {
-		gameTextureAtlas.unload();
+		gameTextureAtlas1.unload();
 	}
 
 	/**
@@ -350,6 +364,13 @@ public class ResourceManager {
 	public void setGrassImageProfileRegion(TextureRegion grassImageProfileRegion) {
 		this.grassImageProfileRegion = grassImageProfileRegion;
 	}
+	
+	public TextureRegion getTundraImageProfileRegion() {
+		return tundraImageProfileRegion;
+	}
+	public void setTundraImageProfileRegion(TextureRegion tundraImageProfileRegion) {
+		this.tundraImageProfileRegion = tundraImageProfileRegion;
+	}
 	public TextureRegion getPageBullets() {
 		return pageBullets;
 	}
@@ -409,6 +430,14 @@ public class ResourceManager {
 	
 	public void setBeachballRegion(TiledTextureRegion beachballRegion) {
 		this.beachballRegion = beachballRegion;
+	}
+	
+	public TiledTextureRegion getBowlingballRegion() {
+		return bowlingballRegion;
+	}
+	
+	public void setBowlingballRegion(TiledTextureRegion bowlingballRegion) {
+		this.bowlingballRegion = bowlingballRegion;
 	}
 	
 	public TiledTextureRegion getTurretTowerRegion() {
@@ -533,12 +562,18 @@ public class ResourceManager {
 	public void setQuitButtonRegion(TextureRegion quitButtonRegion) {
 		this.quitButtonRegion = quitButtonRegion;
 	}
+	public TextureRegion getFireworksRegion() {
+		return fireworksRegion;
+	}
+	public void setFireworksRegion(TextureRegion fireworksRegion) {
+		this.fireworksRegion = fireworksRegion;
+	}
 	public BuildableBitmapTextureAtlas getGameTextureAtlas() {
-		return gameTextureAtlas;
+		return gameTextureAtlas1;
 	}
 
-	public void setGameTextureAtlas(BuildableBitmapTextureAtlas gameTextureAtlas) {
-		this.gameTextureAtlas = gameTextureAtlas;
+	public void setGameTextureAtlas(BuildableBitmapTextureAtlas gameTextureAtlas1) {
+		this.gameTextureAtlas1 = gameTextureAtlas1;
 	}
 
 	public Font getWhiteFont() {

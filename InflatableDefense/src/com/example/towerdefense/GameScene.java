@@ -15,6 +15,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
 import org.andengine.extension.tmx.TMXLayer;
 import org.andengine.extension.tmx.TMXLoader;
 import org.andengine.extension.tmx.TMXLoader.ITMXTilePropertiesListener;
@@ -61,27 +62,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	private float mPinchZoomStartedCameraZoomFactor;
 	private float maxZoom;
 	
+	private int fingerOnSceneCount;
+	private boolean zooming;
+	
 	//The map and layer of the field
 	private TMXTiledMap mTMXTiledMap;
 	private TMXLayer tmxLayer;
 	
 	//Provides all the text and images for the HUD within this scene
 	private BottomPanel panel;
-	
-	//Turret tower option on the HUD
-	private TowerTile turretTile;
-	
-	//Dart tower option on the HUD
-	private TowerTile dartTile;
-	
-	//Flame tower option on the HUD
-	private TowerTile flameTile;
-	
-	//Ice tower option on the HUD
-	private TowerTile iceTile;
-	
-	//Spike Tower option on the HUD
-	private TowerTile spikeTile;
 	
 	//Start button on the HUD
 	private AnimatedSprite startButton;	
@@ -152,6 +141,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	//list of the enemies within the current wave
 	private CopyOnWriteArrayList<Enemy> enemies;
 	
+	private boolean disableBackButton;
+	
 	
 	//***********************************************************
 	//CONSTRUCTOR
@@ -177,10 +168,14 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		this.setOnSceneTouchListener(this);
 		this.setOnSceneTouchListenerBindingOnActionDownEnabled(true);
 		
+		fingerOnSceneCount = 0;
+		zooming = false;
+		
 		String map = "";
 		
 		if (type == MapType.DESERT) map = "tmx/new_desert_path.tmx";
 		else if (type == MapType.GRASS) map = "tmx/grass_path.tmx";
+		else if (type == MapType.TUNDRA) map = "tmx/tundra_path.tmx";
 		
 		try {
 			final TMXLoader tmxLoader = new TMXLoader(activity.getAssets(), activity.getEngine().getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, activity.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
@@ -191,6 +186,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		} catch (final TMXLoadException e) {
 			Debug.e(e);
 		}
+		
+		gameMap.setMap(mTMXTiledMap);
 
 		tmxLayer = this.mTMXTiledMap.getTMXLayers().get(0);	
 		tmxLayer.setIgnoreUpdate(true);
@@ -228,28 +225,29 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 			}
 		}
 		
-		money = 10;
+		money = 60;
 		lives = 20;
 		
 	  //Initializes the HUD
-		panel = new BottomPanel(mCamera, mTMXTiledMap);		
+		panel = new BottomPanel(mCamera, gameMap);		
 		this.attachChild(panel);
 		
 		TowerTile.initializeMap();
-		turretTile = new TowerTile(resourceManager.getTurretTowerRegion());
+
+		TowerTile turretTile = new TowerTile(resourceManager.getTurretTowerRegion());
 		panel.placeTowerAccess(turretTile, 1);
 		
-		iceTile = new TowerTile(resourceManager.getIceTowerRegion());
+		TowerTile iceTile = new TowerTile(resourceManager.getIceTowerRegion());
 		panel.placeTowerAccess(iceTile, 2);
 		
-		dartTile = new TowerTile(resourceManager.getDartTowerRegion());
+		TowerTile dartTile = new TowerTile(resourceManager.getDartTowerRegion());
 		panel.placeTowerAccess(dartTile, 3);
 		
-		flameTile = new TowerTile(resourceManager.getFlameTowerRegion());
-		panel.placeTowerAccess(flameTile, 4);
+		TowerTile spikeTile = new TowerTile(resourceManager.getSpikeTowerRegion());
+		panel.placeTowerAccess(spikeTile, 4);
 		
-		spikeTile = new TowerTile(resourceManager.getSpikeTowerRegion());
-		panel.placeTowerAccess(spikeTile, 5);
+		TowerTile flameTile = new TowerTile(resourceManager.getFlameTowerRegion());
+		panel.placeTowerAccess(flameTile, 5);
 		
 		startButton = new AnimatedSprite(0.0f,
 				0.0f, resourceManager.getStartButtonRegion(), activity.getVertexBufferObjectManager()) {
@@ -328,14 +326,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 				addEnemiesToTowerQueues();
 			}
 		});
-
-/*		SoccerballEnemy enemy = new SoccerballEnemy(resourceManager.getSoccerballRegion());
-		enemy.setPosition(TILE_WIDTH*5 - TILE_WIDTH/4, TILE_HEIGHT*5 - TILE_HEIGHT/4);
-		Sprite icicle = new Sprite(0.0f,0.0f,resourceManager.getIcicleRegion(),resourceManager.getVbom());
-		icicle.setScale(0.2f);
-		icicle.setPosition(enemy.getX() - enemy.getWidthScaled()*3.2f, enemy.getY() - enemy.getHeightScaled()*3.5f);
-		this.attachChild(enemy);
-		this.attachChild(icicle);*/
+		
+		disableBackButton = false;
 		
 	}
 	//**********************************************************
@@ -432,15 +424,22 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		
 		this.attachChild(redScreen);
 		
-		this.registerUpdateHandler(new TimerHandler(0.25f, new ITimerCallback() {
-			
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				redScreen.detachSelf();
-				unregisterUpdateHandler(pTimerHandler);					
-			}
-			
-		}));
+		if (lives == 0) {
+			displayLoseScreen();
+		}
+		
+		else {
+		
+			this.registerUpdateHandler(new TimerHandler(0.25f, new ITimerCallback() {
+				
+				@Override
+				public void onTimePassed(TimerHandler pTimerHandler) {
+					redScreen.detachSelf();
+					unregisterUpdateHandler(pTimerHandler);					
+				}
+				
+			}));
+		}
 		
 	}
 	
@@ -456,6 +455,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		this.unregisterUpdateHandler(waveGenerator.getTimeHandler());
 		
 		if (startButton.getCurrentTileIndex() > 1) startButton.setCurrentTileIndex(startButton.getCurrentTileIndex()-2);
+		
+		//The player wins the game!!
+		if (waveCount == 70 && lives != 0) {
+			displayWinScreen();
+			return;
+		}
 		
 		waveGenerator.initWave(waveCount);
 		currentWave = waveGenerator.get(waveCount);
@@ -506,7 +511,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		//if the user manually deleted the tower, we need to adjust for that for the paths of the enemies
 		if (aStarHelper.isNavigating())
 			for (Enemy e:currentWave.getEnemies())
-			 updateEnemyPaths(true,e);
+				updateEnemyPaths(true,e);
 		else
 			updateEnemyPaths(false,null);
 	}	
@@ -568,7 +573,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 			initializedNewWave = false;
 			waveGenerator.startWave();
 			startInWaveUpdateHandlers();
-			Log.i("Registering Timer Handler", "NOW");
 		} else {
 			toggleSpeedFactor();
 		}
@@ -698,14 +702,34 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		if (inMiddleOfWave) {
 			Log.i("Updating path", "Updating path");
 			enemy.setNeedToUpdatePath(true);
+			
+			for (Enemy child : enemy.childArray) {
+				child.setNeedToUpdatePath(true);
+			}
+			
 		}else {
-			Path p = aStarHelper.getPath(currentWave.getEnemies().get(0));
+			
+			Path p = null;
+			Enemy en = null;
+			for (Enemy e:currentWave.getEnemies()) {
+				if (e.getClass() != BeachballEnemy.class) {
+					p = aStarHelper.getPath(e);
+					en = e;
+					break;
+				}
+			}
+			
+			//We have a wave full of beach-ball enemies
+			if (en == null) return;
+			
 			if (p == null) {
 				removeCurrentTower(true);
-				p = aStarHelper.getPath(currentWave.getEnemies().get(0));
+				p = aStarHelper.getPath(en);
 			}
+			
 			for (Enemy e:currentWave.getEnemies()) {
-				e.setPath(p.deepCopy());
+				if (e.getClass() != BeachballEnemy.class) e.setPath(p.deepCopy());
+				else aStarHelper.getPath(e);
 			}
 		}
 	}
@@ -739,6 +763,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	 */
 	private Class<?> pointOnTile(int type) {
 		for (TowerTile tile:panel.getTiles()) {
+			if (tile.getFrame().getUserData() == "stop") return null;
 			
 			if (type == TouchEvent.ACTION_DOWN)  {
 				if (tile.getOnTouched())
@@ -772,6 +797,52 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 			}});
 	}
 	
+	private void toggleInGameMenu() {
+		if (this.hasChildScene()) {
+			this.clearChildScene();
+			this.setChildrenIgnoreUpdate(false);
+			this.attachChild(panel);
+			this.setOnSceneTouchListener(this);
+		}
+		else {
+			this.setChildrenIgnoreUpdate(true);
+			this.setChildScene(new InGameMenuScene(this.camera));
+			this.setOnSceneTouchListener(null);
+		}
+	}
+	
+	private void displayWinScreen() {
+		camera.setZoomFactor(1.0f);
+		camera.set(0, 0, mCamera.getWidth(), mCamera.getHeight());
+		camera.setHUD(null);
+		Sprite background = new Sprite(0.0f,0.0f,ResourceManager.getInstance().getFireworksRegion(), vbom);
+		this.attachChild(background);
+		
+		Text win = new Text(0,0,ResourceManager.getInstance().getWhiteFont(), "You Win!", vbom);
+		win.setPosition(camera.getWidth()/2 - win.getWidthScaled()/2, camera.getHeight()/10);
+		this.attachChild(win);
+		
+		toggleInGameMenu();
+		disableBackButton = true;
+	}
+	private void displayLoseScreen() {
+		camera.setZoomFactor(1.0f);
+		camera.set(0, 0, mCamera.getWidth(), mCamera.getHeight());
+		camera.setHUD(null);
+		
+		Text lose = new Text(0,0,ResourceManager.getInstance().getWhiteFont(), "You Lose", vbom);
+		lose.setPosition(camera.getWidth()/2 - lose.getWidthScaled()/2, camera.getHeight()/10);
+		this.attachChild(lose);
+		
+		toggleInGameMenu();
+		disableBackButton = true;
+	}
+	private void setUserDataforTowerTiles(String data) {
+		for (TowerTile tile : panel.getTiles()) {
+			tile.getFrame().setUserData(data);
+		}
+	}
+	
 	//***************************************************
 	//OVERRIDEN METHODS
 	//***************************************************
@@ -784,6 +855,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	@Override
 	public void onPinchZoomStarted(PinchZoomDetector pPinchZoomDetector,
 			TouchEvent pSceneTouchEvent) {
+		fingerOnSceneCount = 2;
+		zooming = true;
+		setUserDataforTowerTiles("stop");
 		this.mPinchZoomStartedCameraZoomFactor = this.mCamera.getZoomFactor();
 	}
 
@@ -801,6 +875,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	@Override
 	public void onPinchZoomFinished(PinchZoomDetector pPinchZoomDetector,
 			TouchEvent pTouchEvent, float pZoomFactor) {
+		
 	// zoom, but make sure the camera does not zoom outside the TMX bounds by using maxZoom
 		this.mCamera.setZoomFactor(Math.min(
                 Math.max(maxZoom, this.mPinchZoomStartedCameraZoomFactor
@@ -864,6 +939,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
   		downCoords.set(x, y);
   		
   		SubMenuManager.setReticalPosition(-500.0f, -500.0f);
+  		
+  		Log.i("Detaching now", "NOW");
   		SubMenuManager.remove();
   		this.unregisterTouchArea(SubMenuManager.getDeleteSprite());
   		
@@ -906,6 +983,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 							attachChild(dragTower.getEntity());
 							
 							try {attachChild(SubMenuManager.getReticle(dragTower));} catch(Exception e){}
+							sortChildren();
 						}
 					});
 					tClass = null;
@@ -959,11 +1037,23 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		}
 		
 		else if (pSceneTouchEvent.isActionUp()) {
-			this.sortChildren();
+			
+			if (zooming) {
+				fingerOnSceneCount--;
+				
+				if (fingerOnSceneCount == 0) {
+					zooming = false;
+					setUserDataforTowerTiles("");
+					
+					for (TowerTile tile : panel.getTiles()) {
+						tile.returnOnMoved();
+					}
+				}
+			}
+			
 			
 			if (towerMove) {
 	  		towerMove = false;
-	  		turretTile.returnOnTouched();
 
 	  		if (currentTile != null && highlightTile != null && highlightTile.getColor().equals(Color.BLUE)) {	  			
 	  			
@@ -971,13 +1061,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	  			blockedTileList.add(currentTile);
 	  			
 	  			towers.add(dragTower);
-	  			
-	  			activity.runOnUpdateThread(new Runnable() {
-						@Override
-						public void run() {
-							detachChild(SubMenuManager.getReticle(dragTower));
-						}
-	  			});
+					SubMenuManager.getReticle(dragTower).detachSelf();
 	  			
 	  			//need to get it out of the scene so that the next dragtower doesn't have to start with it from where the
 	  			//previous tower was placed
@@ -992,7 +1076,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	  		}
 	  		
 	  		else {
-	  			Log.i("Removing Tower", "Removing");
 	  			removeCurrentTower(false);
 	  		}
 	  		
@@ -1005,9 +1088,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 				final ITower tower = pointOnExistingTower(x,y);
 				if (tower != null) {
 					this.attachChild(SubMenuManager.display(tower));
+					Log.i("Reticle", "Visible? "+SubMenuManager.getReticle(tower).isVisible()+"");
 					panel.attachTowerUpgradeDeleteText(tower);
 					
-					if (Math.abs(camera.getYMin()-0.0f) < 0.00005f) {
+					if (camera.getZoomFactor() - 1.0f < 0.00005f && camera.getYMin() < 0.00005f) {
 						
 						final float displacement = tower.getRadius() - tower.getEntity().getHeightScaled()/2;
 						if (tower.getY() == -20.0f) {
@@ -1015,6 +1099,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 						} else if (tower.getY() == 340.0f) {
 							camera.set(camera.getXMin(), camera.getYMin()+displacement, camera.getXMax(), camera.getYMax()+displacement);
 						}
+						
 					}
 				}
 				
@@ -1028,17 +1113,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 
 	@Override
 	public void onBackKeyPressed() {
-		if (this.hasChildScene()) {
-			this.clearChildScene();
-			this.setChildrenIgnoreUpdate(false);
-			this.attachChild(panel);
-			this.setOnSceneTouchListener(this);
-		}
-		else {
-			this.setChildrenIgnoreUpdate(true);
-			this.setChildScene(new InGameMenuScene(this.camera));
-			this.setOnSceneTouchListener(null);
-		}
+		if (disableBackButton) return;
+		
+		toggleInGameMenu();
 	}
 
 	@Override
