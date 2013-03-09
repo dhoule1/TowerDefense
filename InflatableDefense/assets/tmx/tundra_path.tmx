@@ -4,11 +4,11 @@
   <property name="start" value="true"/>
  </properties>
  <tileset firstgid="1" name="desert_tiled" tilewidth="32" tileheight="32">
-  <image source="gfx/game/tundra_tileset_2.png" width="64" height="192"/>
+  <image source="gfx/game/tundra_tileset_3.png" width="64" height="192"/>
  </tileset>
  <layer name="Tile Layer 1" width="20" height="10">
   <data encoding="base64" compression="zlib">
-   eJzjZGBg4MSDWZAwPnXEYiYkPGreqHnUNo+HAGYFYkYgZiNCLQgDAN4HBnY=
+   eJzjZGBg4MSDWZAwPnXEYiYkPGreqHmEMKnpj4cARjaPkFoQBgDg8wZ8
   </data>
  </layer>
 </map>
