@@ -5,7 +5,7 @@ import org.andengine.extension.tmx.TMXTiledMap;
 public class GameMap {	
 	
 	public enum MapType {
-		DESERT,GRASS,TUNDRA;
+		DESERT,GRASS,TUNDRA,CAVE,BEACH;
 	}
 	public enum StartSide {
 		LEFT,
@@ -46,6 +46,16 @@ public class GameMap {
 			endTile = new int[]{9,9};
 			side = StartSide.UP;
 			mapID = 2;
+		}else if (type.compareTo(MapType.CAVE) == 0) {
+				startTile = new int[]{0,6};
+				endTile = new int[]{5,0};
+				side = StartSide.UP;
+				mapID = 3;
+		}else if (type.compareTo(MapType.BEACH) == 0) {
+			startTile = new int[]{0,5};
+			endTile = new int[]{0,14};
+			side = StartSide.UP;
+			mapID = 4;
 		}
 	}
 	

@@ -22,6 +22,8 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 	private Sprite desertSprite;
 	private Sprite grassSprite;
 	private Sprite tundraSprite;
+	private Sprite caveSprite;
+	private Sprite beachSprite;
 	
 	private float downX;
 	private float downY;
@@ -72,6 +74,18 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 		page3.attachChild(tundraSprite);
 		childScene.addPage(page3);
 		
+		final Rectangle page4 = new Rectangle(0.0f,0.0f,0.0f,0.0f, resources.getVbom());
+	  TextureRegion caveTexture = (unlocked(3)) ? resources.getCaveImageProfileRegion() : resources.getLockedCaveImageProfileRegion();
+		caveSprite = new Sprite(centerX,centerY,caveTexture, resources.getVbom());
+		page4.attachChild(caveSprite);
+		childScene.addPage(page4);
+		
+		final Rectangle page5 = new Rectangle(0.0f,0.0f,0.0f,0.0f, resources.getVbom());
+	  TextureRegion beachTexture = (unlocked(4)) ? resources.getBeachImageProfileRegion() : resources.getLockedBeachImageProfileRegion();
+		beachSprite = new Sprite(centerX,centerY,beachTexture, resources.getVbom());
+		page5.attachChild(beachSprite);
+		childScene.addPage(page5);
+		
 		childScene.setEaseFunction(EaseBackOut.getInstance());
 		childScene.registerScrollScenePageListener(this);
 		this.setTouchAreaBindingOnActionDownEnabled(false);
@@ -120,6 +134,16 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 							SceneManager.getInstance().loadGameScene(ResourceManager.getInstance().getEngine(), MapType.TUNDRA);
 						}
 					}
+					else if (caveSprite.contains(x, y) && childScene.getCurrentPage().equals(page4) && unlocked(3)) {
+						if (Math.abs(downX - x) < 10.0f && Math.abs(downY - y) < 10.0f) {
+							SceneManager.getInstance().loadGameScene(ResourceManager.getInstance().getEngine(), MapType.CAVE);
+						}
+					}
+					else if (beachSprite.contains(x, y) && childScene.getCurrentPage().equals(page5) && unlocked(4)) {
+						if (Math.abs(downX - x) < 10.0f && Math.abs(downY - y) < 10.0f) {
+							SceneManager.getInstance().loadGameScene(ResourceManager.getInstance().getEngine(), MapType.BEACH);
+						}
+					}
 				}
 				return false;
 			}
@@ -158,28 +182,26 @@ public class LevelChooserScene extends BaseScene implements IOnScrollScenePageLi
 	public void onMoveToPageFinished(int pPageNumber) {
 		switch (pPageNumber) {
 			case 0: levelNumber.setText("Level 1");
-							levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
-									camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
 							levelDescr.setText("Grasslands");
-							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
-									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 			        break;
 			case 1: levelNumber.setText("Level 2");
-							levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
-									camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
 							levelDescr.setText("Desert");
-							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
-									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 			        break;
 			case 2: levelNumber.setText("Level 3");
-							levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
-									camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
 							levelDescr.setText("Tundra");
-							levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
-									camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
-      break;
+							break;
+			case 3: levelNumber.setText("Level 4");
+							levelDescr.setText("Cave");
+							break;
+			case 4: levelNumber.setText("Level 5");
+							levelDescr.setText("Beach");
+							break;
 			default:
 		}
+		levelNumber.setPosition(camera.getWidth()/2 - levelNumber.getWidthScaled()/2,
+				camera.getHeight() - levelNumber.getHeightScaled() * 2.0f);
+		levelDescr.setPosition(camera.getWidth()/2 - levelDescr.getWidthScaled()/2,
+				camera.getHeight() - levelDescr.getHeightScaled() * 2.5f);
 	}
 
 }

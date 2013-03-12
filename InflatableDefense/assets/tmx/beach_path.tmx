@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="20" height="10" tilewidth="40" tileheight="40">
+ <tileset firstgid="1" name="beachset_cropped2" tilewidth="16" tileheight="16">
+  <image source="gfx/game/beachset_cropped2.png" width="176" height="48"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJzjYWBg4EXCQkAsDMQiaOLEqOEDYh46mQfCHDiwMAnmyQKxHJFYngjzKMEg88SBWIJKWBKIuUcxRRgAP8kLfw==
+  </data>
+ </layer>
+</map>

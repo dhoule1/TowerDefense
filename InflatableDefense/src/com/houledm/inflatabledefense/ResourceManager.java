@@ -48,6 +48,10 @@ public class ResourceManager {
 	private TextureRegion grassImageProfileRegion;
 	private TextureRegion tundraImageProfileRegion;
 	private TextureRegion lockedTundraImageProfileRegion;
+	private TextureRegion caveImageProfileRegion;
+	private TextureRegion lockedCaveImageProfileRegion;
+	private TextureRegion beachImageProfileRegion;
+	private TextureRegion lockedBeachImageProfileRegion;
 	private BuildableBitmapTextureAtlas levelChooserTextureAtlas;
 	
 	private TiledTextureRegion soccerballRegion;
@@ -57,9 +61,9 @@ public class ResourceManager {
 	private TiledTextureRegion bowlingballRegion;
 	
 	private TiledTextureRegion turretTowerRegion;
-	private TextureRegion dartTowerRegion;
-	private TextureRegion flameTowerRegion;
-	private TextureRegion iceTowerRegion;
+	private TiledTextureRegion dartTowerRegion;
+	private TiledTextureRegion flameTowerRegion;
+	private TiledTextureRegion iceTowerRegion;
 	private TiledTextureRegion spikeTowerRegion;
 	
 	private TextureRegion dartBulletRegion;
@@ -68,7 +72,7 @@ public class ResourceManager {
 	
 	//Sub Menu Items
 	private TextureRegion towerSightRegion;
-	private TextureRegion upgradeOptionRegion;
+	private TiledTextureRegion upgradeOptionRegion;
 	private TextureRegion deleteOptionRegion;
 	
 	private TiledTextureRegion startButtonRegion;
@@ -168,6 +172,10 @@ public class ResourceManager {
 		grassImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "grass_image.png");
 		tundraImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "tundra_image.png");
 		lockedTundraImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "tundra_image_locked.png");
+		caveImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "cave_image.png");
+		lockedCaveImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "cave_image_locked.png");
+		beachImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "beach_image.png");
+		lockedBeachImageProfileRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(levelChooserTextureAtlas, activity, "beach_image_locked.png");
 		
 		try {
 			levelChooserTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
@@ -198,20 +206,20 @@ public class ResourceManager {
 		bowlingballRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "bowling_ball_tiled.png",2,1);
 		
 		//TOWERS
-		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "new_turret_tiled.png", 4,1); 
-		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "dart_tower.png"); 
-		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "flame_tower.png"); //80x80
-		iceTowerRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "ice_tower.png"); //80x80
-		spikeTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "spike_tower_tiled.png", 5,1); //80x160
+		turretTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "turret_tower_new.png", 4,2); 
+		dartTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "dart_tower_new.png",1,2); 
+		flameTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "flame_tower_new.png",1,2); //80x80
+		iceTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "ice_tower_new.png",1,2); //80x80
+		spikeTowerRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "spike_tower_new.png", 5,2); //80x160
 		
 		//BULLETS
-		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "new_dart.png"); //249x71
+		dartBulletRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "dart.png"); //249x71
 		flameParticleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "particle_fire.png"); //32x32
 		icicleRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "icicle_2_light_trans.png");
 		
 		//SUB-MENU ITEMS
 		towerSightRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "tower_sight.png"); //100x100
-		upgradeOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "up_arrow.png"); //228x221
+		upgradeOptionRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas1, activity, "up_arrow_new.png",2,1); //228x221
 		deleteOptionRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas1, activity, "red_x.png"); //238x208
 		
 		//MISC
@@ -386,6 +394,33 @@ public class ResourceManager {
 			TextureRegion lockedTundraImageProfileRegion) {
 		this.lockedTundraImageProfileRegion = lockedTundraImageProfileRegion;
 	}
+	
+	public TextureRegion getCaveImageProfileRegion() {
+		return caveImageProfileRegion;
+	}
+	public void setCaveImageProfileRegion(TextureRegion caveImageProfileRegion) {
+		this.caveImageProfileRegion = caveImageProfileRegion;
+	}
+	public TextureRegion getLockedCaveImageProfileRegion() {
+		return lockedCaveImageProfileRegion;
+	}
+	public void setLockedCaveImageProfileRegion(
+			TextureRegion lockedCaveImageProfileRegion) {
+		this.lockedCaveImageProfileRegion = lockedCaveImageProfileRegion;
+	}
+	public TextureRegion getBeachImageProfileRegion() {
+		return beachImageProfileRegion;
+	}
+	public void setBeachImageProfileRegion(TextureRegion beachImageProfileRegion) {
+		this.beachImageProfileRegion = beachImageProfileRegion;
+	}
+	public TextureRegion getLockedBeachImageProfileRegion() {
+		return lockedBeachImageProfileRegion;
+	}
+	public void setLockedBeachImageProfileRegion(
+			TextureRegion lockedBeachImageProfileRegion) {
+		this.lockedBeachImageProfileRegion = lockedBeachImageProfileRegion;
+	}
 	public BuildableBitmapTextureAtlas getLevelChooserTextureAtlas() {
 		return levelChooserTextureAtlas;
 	}
@@ -464,30 +499,26 @@ public class ResourceManager {
 		this.turretTowerRegion = turretTowerRegion;
 	}
 
-	public TextureRegion getDartTowerRegion() {
+	
+
+	public TiledTextureRegion getDartTowerRegion() {
 		return dartTowerRegion;
 	}
-
-	public void setDartTowerRegion(TextureRegion dartTowerRegion) {
+	public void setDartTowerRegion(TiledTextureRegion dartTowerRegion) {
 		this.dartTowerRegion = dartTowerRegion;
 	}
-
-	public TextureRegion getFlameTowerRegion() {
+	public TiledTextureRegion getFlameTowerRegion() {
 		return flameTowerRegion;
 	}
-
-	public void setFlameTowerRegion(TextureRegion flameTowerRegion) {
+	public void setFlameTowerRegion(TiledTextureRegion flameTowerRegion) {
 		this.flameTowerRegion = flameTowerRegion;
 	}
-	
-	public TextureRegion getIceTowerRegion() {
+	public TiledTextureRegion getIceTowerRegion() {
 		return iceTowerRegion;
 	}
-
-	public void setIceTowerRegion(TextureRegion iceTowerRegion) {
+	public void setIceTowerRegion(TiledTextureRegion iceTowerRegion) {
 		this.iceTowerRegion = iceTowerRegion;
 	}
-
 	public TiledTextureRegion getSpikeTowerRegion() {
 		return spikeTowerRegion;
 	}
@@ -528,14 +559,12 @@ public class ResourceManager {
 		this.towerSightRegion = towerSightRegion;
 	}
 
-	public TextureRegion getUpgradeOptionRegion() {
+	public TiledTextureRegion getUpgradeOptionRegion() {
 		return upgradeOptionRegion;
 	}
-
-	public void setUpgradeOptionRegion(TextureRegion upgradeOptionRegion) {
+	public void setUpgradeOptionRegion(TiledTextureRegion upgradeOptionRegion) {
 		this.upgradeOptionRegion = upgradeOptionRegion;
 	}
-
 	public TextureRegion getDeleteOptionRegion() {
 		return deleteOptionRegion;
 	}

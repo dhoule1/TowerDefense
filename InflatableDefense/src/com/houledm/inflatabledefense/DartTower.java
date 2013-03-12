@@ -3,23 +3,23 @@ package com.houledm.inflatabledefense;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.MoveModifier;
-import org.andengine.opengl.texture.region.TextureRegion;
+import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.util.modifier.IModifier;
 
-public class DartTower extends BaseTower{
+public class DartTower extends BaseAnimatedTower{
 
 	private static final float SCOPE = 100.0f;
-	private static final float TIME_BETWEEN_SHOTS = 1.0f;
+	private static float TIME_BETWEEN_SHOTS = 1.0f;
 	private static final int POWER = 3;
 	public static final Integer COST = 30;
 	public static final boolean HAS_BULLETS = true;
-	
-	public static int count = 0;
+	public static final int START_FRAME = 0;
+	public static final int ANIMATION_COUNT = 0;
 	
 	private DartBulletPool bulletPool;
 
-	public DartTower(float pX, float pY,TextureRegion pTextureRegion) {
-		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, pTextureRegion);
+	public DartTower(float pX, float pY,TiledTextureRegion pTextureRegion) {
+		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, START_FRAME,ANIMATION_COUNT);
 		bulletPool = GameScene.getSharedInstance().getDartBulletPool();
 	}
 	
@@ -57,6 +57,9 @@ public class DartTower extends BaseTower{
 		if (!b.hasParent()) GameScene.getSharedInstance().attachChild(b);
 	}
 	
-	
-
+	@Override
+	public void upgrade() {
+		super.upgrade();
+		timeBetweenShots *= 0.70f;
+	}
 }

@@ -7,16 +7,19 @@ import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.entity.sprite.Sprite;
-import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.util.modifier.IModifier;
 
-public class IceTower extends BaseTower {
+public class IceTower extends BaseAnimatedTower {
 
 	private static final float SCOPE = 60.0f;
 	private static final float TIME_BETWEEN_SHOTS = 2.0f;
 	private static final int POWER = 0;
 	public static final Integer COST = 15;
 	public static final boolean HAS_BULLETS = false;
+	private static final int STARTING_FRAME = 0;
+	private static final int ANIMATION_COUNT = 0;
+	
 	public static final int KILLING_COUNT = 2;
 	
 	private IciclePool pool;
@@ -25,8 +28,8 @@ public class IceTower extends BaseTower {
 	
 	private Sound freezeSound;
 
-	public IceTower(float pX, float pY, ITextureRegion pTextureRegion) {
-		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, pTextureRegion);
+	public IceTower(float pX, float pY, TiledTextureRegion pTextureRegion) {
+		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS,STARTING_FRAME, ANIMATION_COUNT);
 		r = new Random();
 		freezeSound = ResourceManager.getInstance().getFreezeSound();
 		freezeSound.setVolume(2.0f);
@@ -83,5 +86,10 @@ public class IceTower extends BaseTower {
 			count++;
 			if (count == KILLING_COUNT) return;
 		}
+	}
+	
+	@Override public void upgrade() {
+		super.upgrade();
+		this.timeBetweenShots *= 0.5f;
 	}
 }

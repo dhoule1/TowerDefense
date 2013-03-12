@@ -13,7 +13,7 @@ import org.andengine.util.algorithm.path.astar.ManhattanHeuristic;
 
 public class MyAStarPathFinder {
 	
-	private static final int MAX_DEPTH = 60;
+	private static final int MAX_DEPTH = 80;
 	
 	private SortedList open;
 	private List<Node> closed;
@@ -73,8 +73,6 @@ public class MyAStarPathFinder {
 	
 	public Path findPath(Enemy enemy) {
 		
-		long start = System.currentTimeMillis();
-		
 		TMXTile tile = (enemy.getUserData() == "dummy") ? startTile : layer.getTMXTileAt(enemy.getXReal(), enemy.getYReal());
 		
 		int fromX = tile.getTileColumn();
@@ -93,11 +91,9 @@ public class MyAStarPathFinder {
 		closed.clear();
 		open.clear(); 
 		open.add(fromNode);
-		
-		int cycleCount = 0;
+
 		int currentDepth = 0;
 		while((open.size() != 0) && (currentDepth < MAX_DEPTH)) {
-			cycleCount++;
 			
 			Node current = (Node)open.first();
 			
@@ -157,8 +153,6 @@ public class MyAStarPathFinder {
 		}
 		
 		result.set(0, fromNode.getX(), fromNode.getY());
-		
-		long end = System.currentTimeMillis();
 		
 		return result;
 		

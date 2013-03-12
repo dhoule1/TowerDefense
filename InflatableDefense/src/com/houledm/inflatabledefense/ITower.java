@@ -30,5 +30,7 @@ public interface ITower {
 	public void shoot(Enemy e);
 	public void checkForDeadEnemies(Enemy e);
 	public RectangularShape getEntity();
+	public boolean canUpgrade();
+	public void upgrade();
 
 }

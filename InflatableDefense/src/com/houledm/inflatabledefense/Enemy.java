@@ -79,6 +79,7 @@ public class Enemy extends AnimatedSprite{
 		}
 		
 		GameScene.getSharedInstance().seeIfWaveFinished();
+		
 	}
 	
 	/**

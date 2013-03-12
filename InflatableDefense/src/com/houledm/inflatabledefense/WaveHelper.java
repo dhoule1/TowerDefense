@@ -58,7 +58,7 @@ public class WaveHelper extends HashMap<Integer, Wave>{
 	  	
 	  	else {
 	  		
-	  		float difficultyMultiplier = (i < 35) ? 1.0f : (float)i/25;
+	  		float difficultyMultiplier = (i < 35) ? 1.0f : (float)i/30;
 	  		
 	  		if (i%10 == 0) {
 	  			w = new Wave(createEnemyArray(BowlingballEnemy.class, (i/10)-1), 2, difficultyMultiplier);

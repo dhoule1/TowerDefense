@@ -13,19 +13,20 @@ import org.andengine.entity.particle.modifier.ExpireParticleInitializer;
 import org.andengine.entity.particle.modifier.ScaleParticleModifier;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.UncoloredSprite;
-import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
+import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 
-public class FlameTower extends BaseTower {
+public class FlameTower extends BaseAnimatedTower {
 
 	private static final float SCOPE = 60.0f;
 	private static final float TIME_BETWEEN_SHOTS = 0.8f;
 	private static final int POWER = 1;
-	public static final Integer COST = 0;//225;
+	public static final Integer COST = 225;
 	public static final boolean HAS_BULLETS = false;
-	public static final int KILLING_COUNT = 2;
+	public static final int START_FRAME = 0;
+	public static final int ANIMATION_COUNT = 0;
 	
 	private static TextureRegion flameRegion1;
 	
@@ -40,44 +41,63 @@ public class FlameTower extends BaseTower {
 	
 	private boolean firing;
 	
+	public int killingCount;
+	
+	ColorParticleModifier<UncoloredSprite> red;
+	ColorParticleModifier<UncoloredSprite> orange;
+	ColorParticleModifier<UncoloredSprite> yellow;
+	
 	public static void initialize(TextureRegion region) {
 		flameRegion1 = region;
 	}
-	public FlameTower(final float pX, final float pY, final ITextureRegion pTextureRegion) {
-		super(pX, pY, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS,pTextureRegion);
+	public FlameTower(final float pX, final float pY, final TiledTextureRegion pTextureRegion) {
+		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, START_FRAME, ANIMATION_COUNT);
 		
 		entity = new Entity();
 		entity.setZIndex(1);
 		
-		pSystem3 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
-		pSystem3.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
-		pSystem3.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-20.0f,20.0f));
-		pSystem3.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
-		pSystem3.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f,1.0f, 0.0f,0.0f,0.0f,0.0f)); //Red
-		pSystem3.addParticleModifier(new ScaleParticleModifier<UncoloredSprite>(0.0f, 1.5f,1.0f, 3.0f));	
-		pSystem3.setVisible(false);
-		pSystem3.setParticlesSpawnEnabled(false);
-		entity.attachChild(pSystem3);
-
+		red = new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f,1.0f, 0.0f,0.0f,0.0f,0.0f);
+		orange = new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f, 1.0f, 0.64706f,0.64706f, 0.0f, 0.0f);
+		yellow = new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f,1.0f, 1.0f,1.0f,0.0f,0.0f);
+		
+		ExpireParticleInitializer<UncoloredSprite> epi = new ExpireParticleInitializer<UncoloredSprite>(2.0f);
+		VelocityParticleInitializer<UncoloredSprite> vpi = new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-20.0f,20.0f);
+		RotationParticleInitializer<UncoloredSprite> rpi = new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f);
+		ScaleParticleModifier<UncoloredSprite> spm = new ScaleParticleModifier<UncoloredSprite> (0.0f, 1.5f,1.0f, 3.0f);
+		
 		pSystem1 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
-		pSystem1.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
-		pSystem1.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-10.0f,10.0f));
-		pSystem1.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
-		pSystem1.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f, 1.0f, 0.64706f,0.64706f, 0.0f, 0.0f)); //Orange
-		pSystem1.addParticleModifier(new ScaleParticleModifier<UncoloredSprite>(0.0f, 1.5f,1.0f, 3.0f));	
+		pSystem1.addParticleInitializer(epi);
+		pSystem1.addParticleInitializer(vpi);
+		pSystem1.addParticleInitializer(rpi);
+		pSystem1.addParticleModifier(red); 
+		pSystem1.addParticleModifier(spm);	
 		pSystem1.setVisible(false);
 		pSystem1.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem1);
 		
+		//vpi.setVelocityY(-10.0f,10.0f);
+
 		pSystem2 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
-		pSystem2.addParticleInitializer(new ExpireParticleInitializer<UncoloredSprite>(2.0f));
-		pSystem2.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,0.0f,0.0f));
-		pSystem2.addParticleInitializer(new RotationParticleInitializer<UncoloredSprite>(0.0f,180.0f));
-		pSystem2.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 1.0f,1.0f, 1.0f,1.0f,0.0f,0.0f)); //Yellow
-		pSystem2.addParticleModifier(new ScaleParticleModifier<UncoloredSprite>(0.0f, 1.5f,1.0f, 3.0f));	
+		pSystem2.addParticleInitializer(epi);
+		pSystem2.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,-10.0f,10.0f));
+		pSystem2.addParticleInitializer(rpi);
+		pSystem2.addParticleModifier(orange);
+		pSystem2.addParticleModifier(spm);	
 		pSystem2.setVisible(false);
 		pSystem2.setParticlesSpawnEnabled(false);
 		entity.attachChild(pSystem2);
+		
+		//vpi.setVelocityY(0.0f,0.0f);
+		
+		pSystem3 = new BatchedSpriteParticleSystem(new PointParticleEmitter(0,0), 5, 5, 15, flameRegion1, InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+		pSystem3.addParticleInitializer(epi);
+		pSystem3.addParticleInitializer(new VelocityParticleInitializer<UncoloredSprite>(-75.0f,-80.0f,0.0f,0.0f));
+		pSystem3.addParticleInitializer(rpi);
+		pSystem3.addParticleModifier(yellow);
+		pSystem3.addParticleModifier(spm);	
+		pSystem3.setVisible(false);
+		pSystem3.setParticlesSpawnEnabled(false);
+		entity.attachChild(pSystem3);
 		
 		psSight = new Rectangle(0,-this.getWidthScaled()/3,-this.getHeightScaled()*3,	this.getHeightScaled(),InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
 		psSight.setColor(Color.TRANSPARENT);
@@ -91,6 +111,8 @@ public class FlameTower extends BaseTower {
 		particlesAttached = false;
 		
 		firing = false;
+		
+		killingCount = 2;
 	}
 	
 	private void disableParticleSystem() {
@@ -187,8 +209,23 @@ public class FlameTower extends BaseTower {
 			if (psSight.contains(enemy.getXReal(), enemy.getYReal())) {
 				enemy.hit(POWER);
 				checkForDeadEnemies(enemy);
-				if ((i+1) == KILLING_COUNT) return;
+				if ((i+1) == killingCount) return;
 			}
 		}
+	}
+	
+	@Override
+	public void upgrade() {
+		super.upgrade();
+		killingCount += 3;
+		
+		pSystem1.removeParticleModifier(red);
+		pSystem1.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 0,0, 0,0, 0.50196f,0.50196f));
+		
+		pSystem2.removeParticleModifier(orange);
+		pSystem2.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 0.5294f,0.5294f, 0.8078f,0.8078f, 0.9804f,0.9804f));
+		
+		pSystem3.removeParticleModifier(yellow);
+		pSystem3.addParticleModifier(new ColorParticleModifier<UncoloredSprite>(1.0f, 3.0f, 0.8784f,0.8784f, 1,1, 1,1));
 	}
 }

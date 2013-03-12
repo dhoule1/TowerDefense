@@ -16,27 +16,34 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	private RectangularShape entity;
 	
 	public float scope;
-	private float timeBetweenShots;
-	private int power;
+	public float timeBetweenShots;
+	public int power;
 	public Integer cost;
 	
 	private Rectangle sight;
 	
 	private Enemy lockedOn;
 	
+	private boolean hasBullets;
+	
 	protected CopyOnWriteArrayList<Enemy> queue;
 	
 	private boolean shooting;
 	
 	private int startFrame;
+	private int animationCount;
+	public int startAnimationFrame;
+	public int endAnimationFrame;
 	
-	public BaseAnimatedTower(float pX, float pY, ITiledTextureRegion pTextureRegion, float scope, float time, int power, int cost, int startFrame) {
+	public BaseAnimatedTower(float pX, float pY, ITiledTextureRegion pTextureRegion, float scope, float time, int power, int cost, boolean hasBullets, int startFrame, int animationCount) {
 		super(pX, pY, pTextureRegion, ResourceManager.getInstance().getVbom());
 		this.scope = scope;
 		this.timeBetweenShots = time;
 		this.power = power;
 		this.cost = cost;
+		this.hasBullets = hasBullets;
 		this.startFrame = startFrame;
+		this.animationCount = animationCount;
 		
 		sight = new Rectangle(0,0,
 				scope*2, scope*2, ResourceManager.getInstance().getVbom());
@@ -47,9 +54,13 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 		queue = new CopyOnWriteArrayList<Enemy>();
 		
 		shooting = false;
+		
+		startAnimationFrame = startFrame;
+		endAnimationFrame = animationCount - 1;
 	}
 	
 	public void animate(){}
+	public void fireBullets(Enemy e){}
 
 	@Override
 	public void setPosition(float x, float y) {
@@ -85,8 +96,11 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	@Override
 	public void onIdleInWave() {
 		this.clearQueue();
-		if (this.getCurrentTileIndex() == startFrame && !shooting) {
-			this.setCurrentTileIndex(0);
+		
+		if (this.getCurrentTileIndex() == startAnimationFrame && !shooting) {
+			
+			if (this.startFrame == 1) this.setCurrentTileIndex(startAnimationFrame-1);
+		
 			this.stopAnimation();
 		}
 	}
@@ -94,7 +108,7 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	@Override
 	public void onWaveEnd() {
 		this.clearQueue();
-		this.setCurrentTileIndex(0);
+		this.setCurrentTileIndex((this.startFrame == 0) ? startAnimationFrame : startAnimationFrame-1);
 		this.stopAnimation();
 	}
 
@@ -138,8 +152,11 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-				hitEnemy(e);
-				checkForDeadEnemies(e);
+				if (hasBullets) fireBullets(e);
+				else {
+					hitEnemy(e);
+					checkForDeadEnemies(e);
+				}
 			}
 
 			@Override
@@ -186,6 +203,33 @@ public class BaseAnimatedTower extends AnimatedSprite implements ITower {
 	@Override
 	public void removeEnemyFromQueue(Enemy enemy) {
 		this.queue.remove(enemy);
+	}
+
+	@Override
+	public boolean canUpgrade() {
+		if (this.animationCount > 0)return this.getCurrentTileIndex() - animationCount < 0;
+		else return this.getCurrentTileIndex() == 0;
+	}
+
+	@Override
+	public void upgrade() {
+		
+		if (this.animationCount != 0) {
+			startAnimationFrame += animationCount;
+			endAnimationFrame += animationCount;
+			this.setCurrentTileIndex(this.getCurrentTileIndex()+animationCount);
+		}
+		else {
+			startAnimationFrame += 1;
+			endAnimationFrame += 1;
+			this.setCurrentTileIndex(this.getCurrentTileIndex()+1);
+		}
+		
+		if (this.isAnimationRunning()) {
+			this.stopAnimation();
+			this.animate();
+		}
+		
 	}
 	
 }

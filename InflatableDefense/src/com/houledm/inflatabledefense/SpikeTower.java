@@ -1,10 +1,6 @@
 package com.houledm.inflatabledefense;
 
-import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.DelayModifier;
-import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
-import org.andengine.util.modifier.IModifier;
 
 public class SpikeTower extends BaseAnimatedTower{
 	
@@ -12,33 +8,21 @@ public class SpikeTower extends BaseAnimatedTower{
 	private static final float TIME_BETWEEN_SHOTS = 1.2f;
 	private static final int POWER = 2;
 	public static final Integer COST = 150;
-	private static final int KILLING_COUNT = 3;
+	public static final boolean HAS_BULLETS = false; 
+	private static final int ANIMATION_COUNT = 5;
 	
 	public static final int START_FRAME = 1;
-	
-	private boolean animate;
+
+	private int killingCount;
 
 	public SpikeTower(float pX, float pY, ITiledTextureRegion pTextureRegion) {
-		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, START_FRAME);
+		super(pX, pY, pTextureRegion, SCOPE, TIME_BETWEEN_SHOTS, POWER, COST, HAS_BULLETS, START_FRAME, ANIMATION_COUNT);
+		killingCount = 3;
 	}
 	
 	@Override 
 	public void animate() {
-		animate(new long[]{25,25,25,25}, 1,4, true);
-		
-		animate = true;
-		DelayModifier delay = new DelayModifier(1.0f, new IEntityModifierListener() {
-
-			@Override
-			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
-
-			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				animate = false;
-			}
-		});
-		this.registerEntityModifier(delay);
-		delay.setAutoUnregisterWhenFinished(true);
+		animate(new long[]{25,25,25,25}, startAnimationFrame, endAnimationFrame, true);
 	}
 	
 	@Override
@@ -47,18 +31,13 @@ public class SpikeTower extends BaseAnimatedTower{
 			Enemy enemy = queue.get(i);
 			enemy.hit(POWER);
 			checkForDeadEnemies(enemy);
-			if (i+1 == KILLING_COUNT) break;
+			if (i+1 == killingCount) break;
 		}
 	}
 	
-	@Override
-	public void onIdleInWave() {
-		this.clearQueue();
-		
-		if (!animate) {
-			this.setCurrentTileIndex(0);
-			this.stopAnimation();
-		}
+	@Override public void upgrade() {
+		super.upgrade();
+		this.timeBetweenShots *= 0.6f;
 	}
 
 }

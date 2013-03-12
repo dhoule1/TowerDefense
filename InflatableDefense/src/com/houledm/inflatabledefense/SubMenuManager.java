@@ -2,8 +2,10 @@ package com.houledm.inflatabledefense;
 
 import org.andengine.entity.Entity;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.TextureRegion;
+import org.andengine.opengl.texture.region.TiledTextureRegion;
 
 public class SubMenuManager {
 	
@@ -12,7 +14,7 @@ public class SubMenuManager {
 	private static Sprite reticle;
 	private static float sightOriginalScale;
 	
-	private static Sprite upgradeOption;
+	private static TiledSprite upgradeOption;
 	private static Sprite sellOption;
 	
 	private static ITower activeTower;
@@ -31,8 +33,23 @@ public class SubMenuManager {
 		reticle.setZIndex(2);
 		scene = GameScene.getSharedInstance();
 	}
-	public static void getUpgradeRegion(TextureRegion region) {
-		upgradeOption = new Sprite(0.0f,0.0f, region, InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager());
+	public static void getUpgradeRegion(TiledTextureRegion region) {
+		upgradeOption = new TiledSprite(0.0f,0.0f, region, InflatableDefenseActivity.getSharedInstance().getVertexBufferObjectManager()) {
+			@Override
+			public boolean onAreaTouched(TouchEvent event, float x, float y) {
+				
+				this.setCurrentTileIndex(1);
+				
+				int amount = (int) (activeTower.getCost()*0.6);
+				
+				if (scene.canAfford(amount) && activeTower.canUpgrade()) {
+					scene.payAmount(amount);
+					activeTower.upgrade();
+				}
+				
+				return super.onAreaTouched(event, x, y);
+			}
+		};
 		upgradeOption.setScale(0.15f);
 		upgradeOption.setZIndex(3);
 	}
@@ -44,6 +61,7 @@ public class SubMenuManager {
 			public boolean onAreaTouched(TouchEvent event, float x, float y) {
 				scene.addAmount((int)(activeTower.getCost()*0.80));
 				scene.unregisterTouchArea(sellOption);
+				scene.unregisterTouchArea(upgradeOption);
 				scene.removeTower(activeTower, true);
 				reticle.setPosition(-500.0f,-500.0f);
 				return super.onAreaTouched(event, x, y);
@@ -60,11 +78,15 @@ public class SubMenuManager {
 	public static Sprite getDeleteSprite() {
 		return sellOption;
 	}
+	public static TiledSprite getUpgradeSprite() {
+		return upgradeOption;
+	}
 	
 	
 	public static Entity display(ITower t) {
 		
 		scene.registerTouchArea(sellOption);
+		scene.registerTouchArea(upgradeOption);
 		
 		activeTower = t;
 		float radius = t.getRadius();
@@ -72,6 +94,9 @@ public class SubMenuManager {
 		reticle.setScale(sightOriginalScale*(radius/TurretTower.SCOPE));
 		reticle.setPosition(t.getEntity().getX()-t.getEntity().getWidthScaled()/3.5f,
 				t.getEntity().getY()-t.getEntity().getHeightScaled()/3.5f);
+		
+		if (t.canUpgrade()) upgradeOption.setCurrentTileIndex(0);
+		else upgradeOption.setCurrentTileIndex(1);
 
 		upgradeOption.setPosition(reticle.getX(), reticle.getY());
 		sellOption.setPosition(upgradeOption);
@@ -87,7 +112,9 @@ public class SubMenuManager {
 		encapsulatingEntity.attachChild(upgradeOption);
 		encapsulatingEntity.attachChild(sellOption);
 		
+		reticle.detachSelf();
 		encapsulatingEntity.attachChild(reticle);
+		
 		encapsulatingEntity.sortChildren();
 		
 		encapsulatingEntity.setZIndex(1);

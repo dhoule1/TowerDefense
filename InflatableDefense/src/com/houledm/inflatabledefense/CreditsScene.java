@@ -30,7 +30,9 @@ public class CreditsScene extends BaseScene{
 		
 		String celebraterString = "Thanks to Mans Greback for the Celebrater Bubble Font\nhttp://www.mawns.com/wordpress/";
 		String lightningString = "Thanks to Honey & Death for the Lightning Volt Font\nhttp://honeyanddeath.web.fc2.com/index.html";
-		String snowTileString = "Thanks to Xenodora and Nushio from http://opengameart.org/ for\nthe bridge and snowy tilesets. Check out http://lpc.opengameart.org/";
+		String snowTileString = "Thanks to Xenodora and Nushio from http://opengameart.org/ for\nthe bridge and snowy tileset. Check out http://lpc.opengameart.org/";
+		String caveTileString = "Thanks to MrBeast for the cave tileset\nhttp://opengameart.org/";
+		String beachTileString = "Thanks to Sharm for his beach tileset\nhttp://opengameart.org/";
 		String soundString = "Thanks to carlSablowEdwards for the popping sound and to the guys at\nhttp://www.soundjay.com for the freezing sound";
 		
 		Text celebraterText = new Text(0,0, font, celebraterString,vbom);
@@ -42,25 +44,37 @@ public class CreditsScene extends BaseScene{
 		Text snowTileText = new Text(0,0,font, snowTileString,vbom);
 		snowTileText.setScale(0.50f);
 		
+		Text caveTileText = new Text(0,0,font,caveTileString,vbom);
+		caveTileText.setScale(0.50f);
+		
+		Text beachTileText = new Text(0,0,font,beachTileString,vbom);
+		beachTileText.setScale(0.50f);
+		
 		Text soundText = new Text(0,0,font,soundString,vbom);
 		soundText.setScale(0.50f);
 
 		celebraterText.setX(-(celebraterText.getWidth() - celebraterText.getWidthScaled())/2);
 		lightningText.setX(-(lightningText.getWidth() - lightningText.getWidthScaled())/2);
 		snowTileText.setX(-(snowTileText.getWidth() - snowTileText.getWidthScaled())/2);
+		caveTileText.setX(-(caveTileText.getWidth() - caveTileText.getWidthScaled())/2);
+		beachTileText.setX(-(beachTileText.getWidth() - beachTileText.getWidthScaled())/2);
 		soundText.setX(-(soundText.getWidth() - soundText.getWidthScaled())/2);
 		
-		final Rectangle rect = new Rectangle(0,camera.getHeight(),camera.getWidth(),celebraterText.getHeightScaled()*6.5f,vbom);
+		final Rectangle rect = new Rectangle(0,camera.getHeight(),camera.getWidth(),celebraterText.getHeightScaled()*9.5f,vbom);
 		rect.setColor(Color.WHITE);
 		rect.setAlpha(0.8f);
 		
 		lightningText.setY(celebraterText.getY() + lightningText.getHeightScaled()*1.5f);
 		snowTileText.setY(lightningText.getY() + snowTileText.getHeightScaled()*1.5f);
-		soundText.setY(snowTileText.getY() + soundText.getHeightScaled()*1.5f);
+		caveTileText.setY(snowTileText.getY() + caveTileText.getHeightScaled()*1.5f);
+		beachTileText.setY(caveTileText.getY() + beachTileText.getHeightScaled()*1.5f);
+		soundText.setY(beachTileText.getY() + soundText.getHeightScaled()*1.5f);
 		
 		rect.attachChild(celebraterText);
 		rect.attachChild(lightningText);
 		rect.attachChild(snowTileText);
+		rect.attachChild(caveTileText);
+		rect.attachChild(beachTileText);
 		rect.attachChild(soundText);
 		
 		final MoveYModifier move = new MoveYModifier(13.0f,rect.getY(),-rect.getHeight());

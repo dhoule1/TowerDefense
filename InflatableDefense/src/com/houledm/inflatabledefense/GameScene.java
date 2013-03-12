@@ -144,7 +144,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	private CopyOnWriteArrayList<Enemy> enemies;
 	
 	private boolean disableBackButton;
-	
+		
 	
 	//***********************************************************
 	//CONSTRUCTOR
@@ -180,6 +180,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		if (type == MapType.DESERT) map = "tmx/new_desert_path.tmx";
 		else if (type == MapType.GRASS) map = "tmx/grass_path.tmx";
 		else if (type == MapType.TUNDRA) map = "tmx/tundra_path.tmx";
+		else if (type == MapType.CAVE) map = "tmx/cave_path.tmx";
+		else if (type == MapType.BEACH) map = "tmx/beach_path.tmx";
 		
 		try {
 			final TMXLoader tmxLoader = new TMXLoader(activity.getAssets(), activity.getEngine().getTextureManager(), TextureOptions.BILINEAR_PREMULTIPLYALPHA, activity.getVertexBufferObjectManager(), new ITMXTilePropertiesListener() {
@@ -463,7 +465,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 			displayWinScreen();
 			return;
 		}
-		
 		waveGenerator.initWave(waveCount);
 		currentWave = waveGenerator.get(waveCount);
 		enemies = (CopyOnWriteArrayList<Enemy>)currentWave.getEnemies();
@@ -473,14 +474,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 		this.aStarHelper.finishWave();
 		this.deadEnemies = 0;
 		
-		/**
-		 * Just for debugging
-		 */
-		for (Enemy enemy:currentWave.getEnemies()) {
-			if (enemy == null) continue;
-			enemy.setUserData(null);
-			enemy.returnHealthToNormal();
-		}
 		for (ITower tower:towers) {
 			tower.onWaveEnd();
 		}
@@ -533,7 +526,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	 */
 	public void seeIfWaveFinished() {		
 		if (!initializedNewWave) {
-			if  ((deadEnemies + aStarHelper.getNumberOfEnemiesFinished() == currentWave.getEnemies().size())) {
+			if (deadEnemies + aStarHelper.getNumberOfEnemiesFinished() >= currentWave.getEnemies().size()) {
 				initializedNewWave = true;
 				waveFinished = true;
 				endInWaveUpdateHandlers();
@@ -543,9 +536,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	}	
 	
 	public void addNewEnemyToField(Enemy enemy) {
+		currentWave.getEnemies().add(enemy);
 		aStarHelper.moveEntity(enemy);
 		this.attachChild(enemy);
-		this.currentWave.getEnemies().add(enemy);
 	}
 	
 	
@@ -601,17 +594,33 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	
 	private void addEnemiesToTowerQueues() {
 		
-		for (ITower tower:towers) {
+		for (ITower tower : towers) {
 			tower.clearQueue();
-			
-			for (Enemy enemy:enemies) {
-				if (enemy.isDead() || enemy.getUserData() == "dead") continue;		
-				
-				if (tower.inSights(enemy.getXReal(), enemy.getYReal())) {
-						tower.addEnemyToQueue(enemy);
-				}
-			}
 		}
+		
+		for (Enemy enemy : enemies) {
+			if (enemy.isDead() || enemy.getUserData() == "dead") continue;
+			
+			
+			/**
+			 * WTF IS HAPPENING HERE???
+			 */
+			if (Float.isNaN(enemy.getX()))  {
+				enemy.destroy();
+				incrementDeadCount();
+				continue;
+			}
+			
+			for (ITower tower : towers) {
+			
+				if (tower.inSights(enemy.getXReal(), enemy.getYReal())) {
+					tower.addEnemyToQueue(enemy);
+				}
+				
+			}
+			
+		}
+		
 	}
 	
 	/**
@@ -700,6 +709,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 	 * @param enemy
 	 */
 	private void updateEnemyPaths(boolean inMiddleOfWave, Enemy enemy) {		
+		
 		if (inMiddleOfWave) {
 			enemy.setNeedToUpdatePath(true);
 			
@@ -946,10 +956,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
   	
   	if (pSceneTouchEvent.isActionDown()) {
   		downCoords.set(x, y);
-
+  		//if (!SubMenuManager.getReticle(null).hasParent()) cameraOffset = false;
+  		
   		SubMenuManager.remove();
   		
   		this.unregisterTouchArea(SubMenuManager.getDeleteSprite());
+  		this.unregisterTouchArea(SubMenuManager.getUpgradeSprite());
   		
   		panel.detachTowerUpgradeDeleteText();
   		panel.detachTowerTextDescription();
@@ -1098,7 +1110,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, IScro
 					this.attachChild(SubMenuManager.display(tower));
 					panel.attachTowerUpgradeDeleteText(tower);
 					
-					if (camera.getZoomFactor() - 1.0f < 0.00005f && camera.getYMin() < 0.00005f) {
+					if (camera.getZoomFactor() - 1.0f < 0.00005f && camera.getYMin() <= 0.0005f && camera.getYMax() >= 480){
 						
 						final float displacement = tower.getRadius() - tower.getEntity().getHeightScaled()/2;
 						if (tower.getY() == -20.0f) {

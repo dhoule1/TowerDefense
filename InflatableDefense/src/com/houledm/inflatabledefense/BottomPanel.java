@@ -176,6 +176,9 @@ public class BottomPanel extends HUD{
 		towerDeleteCostText = "Remove: $"+(int)(tower.getCost()*0.80);
 		towerDeleteCost.setText(towerDeleteCostText);
 		
+		if (tower.canUpgrade()) towerUpgradeCostText = "Updgrade: $"+(int)(tower.getCost()*0.60);
+		else towerUpgradeCostText = "Updgrade: N/A";
+		
 		towerUpgradeCost.setText(towerUpgradeCostText);
 		
 		this.attachChild(towerDeleteCost);

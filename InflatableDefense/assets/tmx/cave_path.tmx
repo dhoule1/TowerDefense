@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="20" height="10" tilewidth="40" tileheight="40">
+ <tileset firstgid="1" name="cave_tileset_cropped" tilewidth="16" tileheight="16" spacing="0" margin="0">
+  <image source="gfx/game/cave_tileset_cropped.png" width="80" height="48"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYWBgYEHDjEDMBMTMWOTIwWxAzA7EHFQyjw+I+aH0QJvHhwOTax4/HkxN9/GRad5IwwDztgRa
+  </data>
+ </layer>
+</map>
