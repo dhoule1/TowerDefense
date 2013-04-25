@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+       <LinearLayout
+        android:id="@+id/detailHorzLayTitle1"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content">
+            <TextView
+	            android:id="@+id/BookTitleLabel"
+	            android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:text="@+string/title_label"
+		        android:textSize="20sp"
+		        android:layout_weight="1"/>
+            <EditText
+                android:inputType="text"
+                android:id="@+id/BookTitle"
+				android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1" />
+       </LinearLayout>
+    
+       <LinearLayout
+        android:id="@+id/detailHorzLayTitle2"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content">
+            <TextView
+	            android:id="@+id/BookEditionLabel"
+	            android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:text="@+string/edition_label"
+		        android:textSize="20sp"
+		        android:layout_weight="1"/>
+            <EditText
+                android:inputType="number"
+                android:id="@+id/BookEdition"
+				android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1" />
+       </LinearLayout>
+       
+       <LinearLayout
+        android:id="@+id/detailHorzLayTitle3"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content">
+            <TextView
+	            android:id="@+id/BookIsbnLabel"
+	            android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:text="@+string/isbn_label"
+		        android:textSize="20sp"
+		        android:layout_weight="1"/>
+            <EditText
+                android:inputType="number"
+                android:id="@+id/BookIsbn"
+				android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1" />
+       </LinearLayout>
+       
+       <LinearLayout
+        android:id="@+id/detailHorzLayTitle4"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content">
+            <TextView
+	            android:id="@+id/BookAuthorLabel"
+	            android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:text="@+string/author_label"
+		        android:textSize="20sp"
+		        android:layout_weight="1"/>
+            <EditText
+                android:inputType="text"
+                android:id="@+id/BookAuthor"
+				android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1" />
+       </LinearLayout>
+       
+       <LinearLayout
+        android:id="@+id/detailHorzLayTitle5"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content">
+            <TextView
+	            android:id="@+id/BookPriceLabel"
+	            android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:text="@+string/price_label"
+		        android:textSize="20sp"
+		        android:layout_weight="1"/>
+            <EditText
+                android:inputType="numberDecimal"
+                android:id="@+id/BookPrice"
+				android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1" />
+       </LinearLayout>
+       
+       <Button
+           android:id="@+id/BookSubmitButton"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content" 
+           android:text="@+string/button_send">
+
+       </Button>
+</LinearLayout>

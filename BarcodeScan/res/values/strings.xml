@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BarcodeScan</string>
+    <string name="action_settings">Settings</string>
+    <string name="edit_username">Username</string>
+    <string name="edit_password">Password</string>
+    <string name="button_send">Submit</string>
+    <string name="have_books">Books - Have</string>
+    <string name="want_books">Books-Want</string>
+    <string name="new_book">Add New</string>
+    <string name="root_url">http://198.199.79.73/</string>
+    <string name="logout">Log Out</string>
+    <string name="title_label">Title</string>
+    <string name="edition_label">Edition</string>
+    <string name="isbn_label">ISBN13</string>
+    <string name="author_label">Author</string>
+    <string name="price_label">Price</string>
+    <string name="book_list_activity_title">Book Listing</string>
+    <string name="book_detail_activity_title">Book Detail</string>
+
+</resources>
